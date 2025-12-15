@@ -419,7 +419,7 @@
             groq: { name: "Groq (Llama 3)", url: "https://api.groq.com/openai/v1/chat/completions" }
         };
 
-        const DOMAINS = ["Polymath", ...new Set(CATEGORY_MAP.map(c => c.domain))];
+        const DOMAINS = ["assorted", ...new Set(CATEGORY_MAP.map(c => c.domain))];
 
         const UI_THEMES = {
             'sepia': {
@@ -483,7 +483,7 @@
         const fetchTopicBatch = async (sectors, seedMode) => {
             let selectedCats = [];
             
-            if (seedMode === 'Polymath') {
+            if (seedMode === 'assorted') {
                 const domains = [...new Set(CATEGORY_MAP.map(c => c.domain))];
                 const shuffledDomains = domains.sort(() => 0.5 - Math.random()).slice(0, sectors);
                 selectedCats = shuffledDomains.map(dom => {
@@ -925,7 +925,7 @@
             const [isSpinning, setIsSpinning] = useState(false);
             const [showResult, setShowResult] = useState(false);
             const [loading, setLoading] = useState(true);
-            const [seedingMode, setSeedingMode] = useState("Polymath");
+            const [seedingMode, setSeedingMode] = useState("assorted");
 
             const theme = UI_THEMES[userSettings.theme];
 
@@ -1131,4 +1131,5 @@
         root.render(<App />);
     </script>
 </body>
+
 </html>
