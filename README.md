@@ -11,7 +11,6 @@ The structure, styling, component logic, and textual scaffolding were generated,
 ## Repository Contents
 
 ### 1. `index.html` — TRACKS @ PWC Research Hub  
-:contentReference[oaicite:0]{index=0}
 
 A comprehensive, self-contained research hub interface that functions as:
 
@@ -35,7 +34,6 @@ A comprehensive, self-contained research hub interface that functions as:
 ---
 
 ### 2. `archivist.html` — The Archivist: Serendipity Engine  
-:contentReference[oaicite:1]{index=1}
 
 An exploratory **knowledge discovery interface** designed to support:
 
@@ -70,12 +68,7 @@ An exploratory **knowledge discovery interface** designed to support:
 
 A detailed **process, governance, and curricular design document** exists describing the institutional vision, operational structure, and long-term roadmap for TRACKS @ PWC.
 
-- This document is provided separately as a PDF  
-- **It is not part of this repository**
-- The HTML files should be understood as *prototypes and visual artifacts* aligned with that broader framework, not as authoritative specifications
-
-For reference only:  
-:contentReference[oaicite:2]{index=2}
+The HTML files should be understood as *prototypes and visual artifacts* aligned with that broader framework, not as authoritative specifications
 
 ---
 
