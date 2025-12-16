@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     
-    <!-- FontAwesome (Stable CSS Icons) -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Tailwind CSS -->
@@ -27,12 +27,9 @@
                     animation: {
                         'spin-slow': 'spin 3s linear infinite',
                         'fade-in': 'fadeIn 0.5s ease-out',
-                        'slide-up': 'slideUp 0.5s ease-out',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                     },
                     keyframes: {
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
                     }
                 }
             }
@@ -42,48 +39,19 @@
     <!-- React & ReactDOM -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- External Category Map -->
-    <script src="category_map.js"></script>
+    <!-- Modular Assets: Data maps in dat/, Styles in src/ -->
+    <script src="dat/category_map.js"></script>
+    <script src="dat/library_map.js"></script>
+    <script src="src/theme_map.js"></script>
+    <link rel="stylesheet" href="src/archivist_style.css">
 
-    <style>
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Subtle Grain Texture Animation */
-        @keyframes grain {
-            0%, 100% { transform: translate(0, 0); }
-            10% { transform: translate(-5%, -10%); }
-            20% { transform: translate(-15%, 5%); }
-            30% { transform: translate(7%, -25%); }
-            40% { transform: translate(-5%, 25%); }
-            50% { transform: translate(-15%, 10%); }
-            60% { transform: translate(15%, 0%); }
-            70% { transform: translate(0%, 15%); }
-            80% { transform: translate(3%, 35%); }
-            90% { transform: translate(-10%, 10%); }
-        }
-        .grain-overlay::after {
-            content: "";
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            animation: grain 8s steps(10) infinite;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.5;
-        }
-    </style>
 </head>
-<body class="grain-overlay transition-colors duration-500">
+<body class="transition-colors duration-500">
     <div id="root"></div>
 
+    <!-- Main Logic: Inlined to prevent CORS/XHR errors on file:// protocol -->
     <script type="text/babel">
         const { useState, useEffect, useCallback, useRef, memo, useMemo } = React;
         
@@ -94,18 +62,21 @@
         const Cache = {
             get: (key) => {
                 try {
-                    const item = sessionStorage.getItem(key);
+                    const item = localStorage.getItem(key);
                     if (!item) return null;
                     const parsed = JSON.parse(item);
-                    if (Date.now() > parsed.exp) { sessionStorage.removeItem(key); return null; }
+                    // 24 Hour TTL
+                    if (Date.now() > parsed.exp) { localStorage.removeItem(key); return null; }
                     return parsed.val;
                 } catch(e) { return null; }
             },
-            set: (key, val, ttlMin = 60) => {
+            set: (key, val, ttlMin = 1440) => { // Default 24 hours
                 try {
                     const item = { val, exp: Date.now() + ttlMin * 60000 };
-                    sessionStorage.setItem(key, JSON.stringify(item));
-                } catch(e) { sessionStorage.clear(); }
+                    localStorage.setItem(key, JSON.stringify(item));
+                } catch(e) { 
+                    localStorage.clear();
+                }
             }
         };
 
@@ -114,34 +85,12 @@
             return text
                 .replace(/\\displaystyle/g, '')
                 .replace(/\\mathbb\{.*?\}/g, '')
-                .replace(/\\mathcal\{.*?\}/g, '')
-                .replace(/\\mathbf\{.*?\}/g, '')
-                .replace(/\\mathrm\{.*?\}/g, '')
-                .replace(/\\ce\{.*?\}/g, '')
-                .replace(/{\\.*?{(.*?)}}/g, '$1') 
                 .replace(/\[\d+\]/g, '')
                 .replace(/\[.*?\]/g, '')
                 .replace(/\(listen\)/g, '')
                 .replace(/\(\s*\)/g, '')
                 .replace(/  /g, ' ')
                 .trim();
-        };
-
-        const inferDomain = (categories = []) => {
-            if (!categories || !categories.length) return "General";
-            const combined = categories.map(c => c.title.toLowerCase()).join(' ');
-            
-            if (combined.includes('philosop') || combined.includes('logic') || combined.includes('ethics')) return "Philosophy";
-            if (combined.includes('scienc') || combined.includes('physic') || combined.includes('biolog') || combined.includes('chem') || combined.includes('astro')) return "Science";
-            if (combined.includes('art') || combined.includes('music') || combined.includes('literat') || combined.includes('paint') || combined.includes('architect')) return "Arts";
-            if (combined.includes('histor') || combined.includes('war') || combined.includes('ancient') || combined.includes('archaeolog')) return "History";
-            if (combined.includes('econom') || combined.includes('financ') || combined.includes('market')) return "Economics";
-            if (combined.includes('law') || combined.includes('legal') || combined.includes('justice')) return "Law";
-            if (combined.includes('polit') || combined.includes('gov') || combined.includes('relation')) return "Politics";
-            if (combined.includes('math') || combined.includes('algebra') || combined.includes('geometr')) return "Mathematics";
-            if (combined.includes('socio') || combined.includes('psycho') || combined.includes('anthro')) return "Social Science";
-            
-            return "General";
         };
 
         const isValidTopic = (title) => {
@@ -189,7 +138,7 @@
             Calculator: "fa-calculator", Building: "fa-building", Vote: "fa-check-to-slot", Rocket: "fa-rocket",
             Leaf: "fa-leaf", Microscope: "fa-microscope", PenTool: "fa-pen-nib", Sigma: "fa-sigma", Divide: "fa-divide",
             Check: "fa-check", Shield: "fa-shield-halved", Fingerprint: "fa-fingerprint", Image: "fa-image",
-            Link: "fa-link", Share: "fa-share-nodes", Copy: "fa-copy"
+            Link: "fa-link", Share: "fa-share-nodes", Copy: "fa-copy", ChevronDown: "fa-chevron-down", ChevronUp: "fa-chevron-up"
         };
 
         const Icon = ({ name, size = 16, className = "" }) => {
@@ -198,24 +147,16 @@
         };
 
         // ==========================================
-        // SECTION 2: CORPUS
+        // SECTION 2: DATA LOADING
         // ==========================================
         
-        // NOTE: CATEGORY_MAP is loaded from category_map.js
         const MAP_DATA = (typeof window.CATEGORY_MAP !== 'undefined') ? window.CATEGORY_MAP : [];
+        const LIBRARIES = (typeof window.LIBRARY_MAP !== 'undefined') ? window.LIBRARY_MAP : {};
+        const THEMES = (typeof window.THEME_MAP !== 'undefined') ? window.THEME_MAP : {};
 
-        const EXTERNAL_RESOURCES = {
-            "Philosophy": [ { name: "Stanford Encyclopedia (SEP)", url: "https://plato.stanford.edu/search/searcher.py?query=" }, { name: "Internet Encyclopedia (IEP)", url: "https://iep.utm.edu/?s=" } ],
-            "Science": [ { name: "ArXiv.org", url: "https://arxiv.org/search/?query=" }, { name: "Nature.com", url: "https://www.nature.com/search?q=" } ],
-            "History": [ { name: "JSTOR", url: "https://www.jstor.org/action/doBasicSearch?Query=" }, { name: "Project Gutenberg", url: "https://www.gutenberg.org/ebooks/search/?query=" } ],
-            "Arts": [ { name: "Google Arts & Culture", url: "https://artsandculture.google.com/search?q=" }, { name: "The Art Story", url: "https://www.theartstory.org/search-results.htm?q=" } ],
-            "Social Science": [ { name: "SSRN", url: "https://papers.ssrn.com/sol3/results.cfm?txtKey_Words=" }, { name: "APA PsycNet", url: "https://psycnet.apa.org/search/results?term=" } ],
-            "Economics": [ { name: "NBER", url: "https://www.nber.org/search?q=" }, { name: "The Economist", url: "https://www.economist.com/search?q=" } ],
-            "Finance": [ { name: "Investopedia", url: "https://www.investopedia.com/search?q=" }, { name: "Financial Times", url: "https://www.ft.com/search?q=" } ],
-            "Law": [ { name: "Legal Info Institute", url: "https://www.law.cornell.edu/search/lii?query=" }, { name: "Justia", url: "https://www.justia.com/search?q=" } ],
-            "Politics": [ { name: "Congressional Research", url: "https://crsreports.congress.gov/search/#/?termsToSearch=" }, { name: "Foreign Affairs", url: "https://www.foreignaffairs.com/search?q=" } ],
-            "Mathematics": [ { name: "Wolfram MathWorld", url: "https://mathworld.wolfram.com/search/?query=" }, { name: "ArXiv Math", url: "https://arxiv.org/search/?query=" } ],
-            "General": [ { name: "Google Scholar", url: "https://scholar.google.com/scholar?q=" } ]
+        // Fallback for Themes if file missing
+        const UI_THEMES = Object.keys(THEMES).length > 0 ? THEMES : {
+            'sepia': { label: 'Sepia', bg: '#f2e8cf', bgCss: 'bg-[#f2e8cf]', text: 'text-[#382b22]', textColor: '#382b22', panel: 'bg-[#fffcf5]', border: 'border-[#d6cbb0]', accent: 'text-[#8c7b60]', button: 'bg-[#2c241b] text-[#f2e8cf]', buttonText: 'text-[#f2e8cf]', font: 'font-serif', pointerColor: '#8c7b60', spinnerBg: 'bg-[#f9f4e6]', link: 'text-[#5c4d3c]', grain: true }
         };
 
         const LLM_PROVIDERS = {
@@ -224,33 +165,6 @@
         };
 
         const DOMAINS = ["assorted", ...new Set(MAP_DATA.map(c => c.domain))];
-
-        const UI_THEMES = {
-            'sepia': {
-                label: 'Sepia',
-                bg: '#f2e8cf', bgCss: 'bg-[#f2e8cf]', text: 'text-[#382b22]', textColor: '#382b22',
-                panel: 'bg-[#fffcf5]', border: 'border-[#d6cbb0]', accent: 'text-[#8c7b60]',
-                button: 'bg-[#2c241b] text-[#f2e8cf] hover:bg-[#4a3b2a] border border-[#382b22]', buttonText: 'text-[#f2e8cf]',
-                font: 'font-serif', pointerColor: '#8c7b60', spinnerBg: 'bg-[#f9f4e6]',
-                link: 'text-[#5c4d3c] decoration-[#8c7b60]'
-            },
-            'dark': {
-                label: 'Obsidian',
-                bg: '#09090b', bgCss: 'bg-zinc-950', text: 'text-zinc-200', textColor: '#e4e4e7',
-                panel: 'bg-zinc-900', border: 'border-zinc-800', accent: 'text-zinc-400',
-                button: 'bg-indigo-600 text-white hover:bg-indigo-500', buttonText: 'text-white',
-                font: 'font-sans', pointerColor: '#e4e4e7', spinnerBg: 'bg-zinc-900',
-                link: 'text-indigo-400 decoration-indigo-600'
-            },
-            'light': {
-                label: 'Light',
-                bg: '#ffffff', bgCss: 'bg-white', text: 'text-slate-900', textColor: '#0f172a',
-                panel: 'bg-slate-50', border: 'border-slate-200', accent: 'text-slate-400',
-                button: 'bg-blue-600 text-white hover:bg-blue-700', buttonText: 'text-white',
-                font: 'font-sans', pointerColor: '#0f172a', spinnerBg: 'bg-slate-100',
-                link: 'text-blue-600 decoration-blue-300'
-            }
-        };
 
         const getDomainIcon = (domain, size = 24, className = "") => {
             switch(domain) {
@@ -410,60 +324,6 @@
             );
         });
 
-        const DisclaimerModal = ({ onAccept, theme }) => (
-            <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-                <div className={`max-w-lg w-full ${theme.panel} ${theme.text} p-8 rounded-xl shadow-2xl border ${theme.border} animate-fade-in font-serif relative`}>
-                    <div className={`absolute top-0 left-0 w-full h-1 ${theme.accent.replace('text', 'bg')}`}></div>
-                    <div className={`flex items-center gap-3 mb-6 border-b ${theme.border} pb-4`}>
-                        <Icon name="Fingerprint" size={24} className={theme.accent} />
-                        <h2 className="text-lg font-bold uppercase tracking-widest">Access Protocol</h2>
-                    </div>
-                    <div className="space-y-4 text-sm leading-relaxed mb-8 font-sans opacity-90">
-                        <p><strong>The Archivist</strong> is a serendipity engine that aggregates content from public knowledge bases (Wikipedia, Google Books) and generative inference models.</p>
-                        <p>Automated summaries may not reflect current academic consensus. This tool assumes no liability for content accuracy. <span className="font-bold">Always consult primary sources for rigorous study.</span></p>
-                        <p className={`text-xs p-2 rounded border ${theme.border} bg-opacity-10`}><strong>AI Notice:</strong> "Scholar's Lens" features utilize external LLMs which may hallucinate facts.</p>
-                    </div>
-                    <button onClick={onAccept} className={`w-full py-4 ${theme.button} ${theme.buttonText} font-bold uppercase tracking-widest text-xs rounded-lg transition-colors flex items-center justify-center gap-2 font-sans shadow-lg`}>
-                        <Icon name="Check" /> Acknowledge & Enter Tool
-                    </button>
-                </div>
-            </div>
-        );
-
-        const CredentialsModal = ({ isOpen, onClose, onConfirm }) => {
-            const [key, setKey] = useState('');
-            const [provider, setProvider] = useState('gemini');
-            const [showGuide, setShowGuide] = useState(false);
-            if (!isOpen) return null;
-            return (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-md animate-in fade-in">
-                    <div className="bg-white max-w-lg w-full p-8 shadow-2xl relative rounded-xl font-sans text-stone-900">
-                        <button onClick={onClose} className="absolute top-4 right-4 text-stone-400 hover:text-stone-800 transition-colors"><Icon name="X" size={20} /></button>
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="p-2 bg-indigo-50 rounded-lg text-indigo-700"><Icon name="Sparkles" size={24}/></div>
-                            <h2 className="text-xl font-bold text-stone-900 tracking-tight">Scholar's Lens</h2>
-                        </div>
-                        <p className="text-sm text-stone-600 mb-6 leading-relaxed">Activate AI-augmented analysis for <strong className="text-indigo-700">Intellectual Synthesis</strong>.</p>
-                        
-                        <div className="flex gap-2 mb-4">
-                            {Object.keys(LLM_PROVIDERS).map(p => (
-                                <button key={p} onClick={() => setProvider(p)} className={`flex-1 py-2 text-xs font-bold border rounded-lg transition-all ${provider === p ? 'bg-indigo-600 text-white border-indigo-600' : 'text-stone-500 border-stone-200 hover:bg-stone-50'}`}>
-                                    {LLM_PROVIDERS[p].name}
-                                </button>
-                            ))}
-                        </div>
-
-                        <input type="password" placeholder={`Paste ${provider === 'gemini' ? 'Google AI' : 'Groq'} API Key`} className="w-full p-3 border border-stone-200 rounded-lg mb-4 font-mono text-sm focus:border-indigo-500 outline-none transition-all" value={key} onChange={(e) => setKey(e.target.value)} />
-                        <button onClick={() => onConfirm({ apiKey: key, provider })} className="w-full py-3 bg-indigo-600 text-white text-xs uppercase tracking-widest font-bold hover:bg-indigo-700 transition-colors rounded-lg shadow-sm mb-4">Initialize Lens</button>
-                        <button onClick={() => setShowGuide(!showGuide)} className="flex items-center gap-2 text-xs font-medium text-stone-400 hover:text-indigo-600 transition-colors mx-auto"><Icon name="HelpCircle" size={14} /> Where do I get a key?</button>
-                        {showGuide && <div className="mt-4 p-4 bg-stone-50 text-xs text-stone-500 rounded-lg border border-stone-100 leading-relaxed">
-                            {provider === 'gemini' ? <span>1. Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-indigo-600 font-bold underline">Google AI Studio</a>.<br/>2. Create a free API Key.</span> : <span>1. Visit <a href="https://console.groq.com/keys" target="_blank" className="text-indigo-600 font-bold underline">Groq Console</a>.<br/>2. Create a free API Key.</span>}
-                        </div>}
-                    </div>
-                </div>
-            );
-        };
-
         const ChatModule = ({ topic, session, theme }) => {
             const [messages, setMessages] = useState([]);
             const [input, setInput] = useState('');
@@ -521,15 +381,51 @@
             );
         };
 
+        const LibraryList = ({ theme, topicTitle }) => {
+            const [openSection, setOpenSection] = useState(null);
+            
+            const toggle = (key) => setOpenSection(openSection === key ? null : key);
+
+            return (
+                <div className={`${theme.panel} rounded-xl border ${theme.border} p-4 shadow-sm`}>
+                    <h3 className={`text-[10px] font-bold ${theme.accent} uppercase tracking-widest mb-3 font-sans font-extrabold flex items-center gap-2`}>
+                        <Icon name="Library" size={14}/> Curated Archives
+                    </h3>
+                    <div className="space-y-1">
+                        {Object.entries(LIBRARIES).map(([category, links]) => (
+                            <div key={category} className={`border ${theme.border} rounded-lg overflow-hidden`}>
+                                <button 
+                                    onClick={() => toggle(category)}
+                                    className={`w-full flex justify-between items-center p-2 text-xs font-bold ${theme.text} hover:bg-black/5 transition-colors`}
+                                >
+                                    <span>{category}</span>
+                                    <Icon name={openSection === category ? "ChevronUp" : "ChevronDown"} size={10} className="opacity-50"/>
+                                </button>
+                                {openSection === category && (
+                                    <div className="p-2 bg-black/5 border-t border-dashed border-stone-300">
+                                        <ul className="space-y-2">
+                                            {links.map((source, i) => (
+                                                <li key={i}>
+                                                    <a href={`${source.url}${encodeURIComponent(topicTitle)}`} target="_blank" rel="noreferrer" className={`block text-xs ${theme.accent} hover:${theme.text} hover:underline decoration-dotted`}>
+                                                        {source.name} <Icon name="ExternalLink" size={8} className="inline ml-1 opacity-50" />
+                                                    </a>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
         const Dashboard = ({ topic, session, theme, onBack, onNavigate, onToast }) => {
             const [extras, setExtras] = useState(null);
             const [loadingExtras, setLoadingExtras] = useState(true);
             const [aiSynthesis, setAiSynthesis] = useState(null);
             
-            // Use inferred domain logic if direct category mapping fails
-            const domain = topic.category?.domain || inferDomain(topic.categories) || "General";
-            const externalSources = EXTERNAL_RESOURCES[domain] || EXTERNAL_RESOURCES["Science"];
-
             useEffect(() => {
                 const init = async () => {
                     setLoadingExtras(true);
@@ -574,10 +470,6 @@
                                 </h3>
                                 <div className={`space-y-4 font-sans text-sm ${theme.text} opacity-90 mb-8`}>
                                     <div className={`flex justify-between border-b ${theme.border} pb-2`}>
-                                        <span className="text-xs font-medium opacity-60">Domain</span>
-                                        <span className="font-bold flex items-center gap-2">{getDomainIcon(domain, 14)} {domain}</span>
-                                    </div>
-                                    <div className={`flex justify-between border-b ${theme.border} pb-2`}>
                                         <span className="text-xs font-medium opacity-60">Full Manuscript</span>
                                         <span className="font-bold">~{Math.ceil((topic.length / 6) / 200)} min</span>
                                     </div>
@@ -617,7 +509,7 @@
                                     ) : (
                                         <div className="flex flex-col gap-2">
                                             {extras?.links.map((link, i) => (
-                                                <button key={i} onClick={() => onNavigate(link, domain)} className={`text-left text-xs font-bold ${theme.text} opacity-80 hover:opacity-100 hover:text-indigo-600 p-3 border ${theme.border} rounded-lg transition-all flex items-center justify-between group/link font-sans bg-transparent hover:bg-black/5`}>
+                                                <button key={i} onClick={() => onNavigate(link)} className={`text-left text-xs font-bold ${theme.text} opacity-80 hover:opacity-100 hover:text-indigo-600 p-3 border ${theme.border} rounded-lg transition-all flex items-center justify-between group/link font-sans bg-transparent hover:bg-black/5`}>
                                                     <span className="truncate pr-2">{link}</span><Icon name="ArrowRight" size={12} className={`opacity-0 group-hover/link:opacity-100 -translate-x-2 group-hover/link:translate-x-0 transition-all ${theme.link}`} />
                                                 </button>
                                             ))}
@@ -625,19 +517,9 @@
                                     )}
                                 </div>
                             </div>
-
-                            <div className={`${theme.panel} rounded-xl border ${theme.border} p-4 shadow-sm`}>
-                                <h3 className={`text-[10px] font-bold ${theme.accent} uppercase tracking-widest mb-3 font-sans font-extrabold`}>Curated External Libraries</h3>
-                                <ul className="space-y-2 font-sans">
-                                    {externalSources.map((source, i) => (
-                                        <li key={i}>
-                                            <a href={`${source.url}${encodeURIComponent(topic.title)}`} target="_blank" rel="noreferrer" className={`flex items-center gap-3 text-xs font-bold ${theme.accent} hover:${theme.text} p-2 rounded transition-colors border border-transparent hover:${theme.border}`}>
-                                                <Icon name="Library" size={14} className="stroke-[2px]"/> {source.name} <Icon name="ExternalLink" size={10} className="ml-auto opacity-30" />
-                                            </a>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                            
+                            {/* Updated Library List - Shows All */}
+                            <LibraryList theme={theme} topicTitle={topic.title} />
                         </div>
 
                         <div className="lg:col-span-8 flex flex-col gap-12">
@@ -705,7 +587,7 @@
                         <div>
                             <label className="text-[10px] font-bold text-stone-400 block mb-2">Interface Theme</label>
                             <div className="flex gap-1">
-                                {['sepia', 'dark', 'light'].map(t => (
+                                {Object.keys(UI_THEMES).map(t => (
                                     <button key={t} onClick={() => onUpdate('theme', t)} className={`flex-1 py-2 text-[10px] font-bold capitalize rounded-md border transition-all ${currentSettings.theme === t ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-sm' : 'border-stone-200 text-stone-600 hover:bg-stone-50'}`}>{t}</button>
                                 ))}
                             </div>
@@ -723,6 +605,60 @@
             );
         };
 
+        const CredentialsModal = ({ isOpen, onClose, onConfirm }) => {
+            const [key, setKey] = useState('');
+            const [provider, setProvider] = useState('gemini');
+            const [showGuide, setShowGuide] = useState(false);
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-md animate-in fade-in">
+                    <div className="bg-white max-w-lg w-full p-8 shadow-2xl relative rounded-xl font-sans text-stone-900">
+                        <button onClick={onClose} className="absolute top-4 right-4 text-stone-400 hover:text-stone-800 transition-colors"><Icon name="X" size={20} /></button>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-indigo-50 rounded-lg text-indigo-700"><Icon name="Sparkles" size={24}/></div>
+                            <h2 className="text-xl font-bold text-stone-900 tracking-tight">Scholar's Lens</h2>
+                        </div>
+                        <p className="text-sm text-stone-600 mb-6 leading-relaxed">Activate AI-augmented analysis for <strong className="text-indigo-700">Intellectual Synthesis</strong>.</p>
+                        
+                        <div className="flex gap-2 mb-4">
+                            {Object.keys(LLM_PROVIDERS).map(p => (
+                                <button key={p} onClick={() => setProvider(p)} className={`flex-1 py-2 text-xs font-bold border rounded-lg transition-all ${provider === p ? 'bg-indigo-600 text-white border-indigo-600' : 'text-stone-500 border-stone-200 hover:bg-stone-50'}`}>
+                                    {LLM_PROVIDERS[p].name}
+                                </button>
+                            ))}
+                        </div>
+
+                        <input type="password" placeholder={`Paste ${provider === 'gemini' ? 'Google AI' : 'Groq'} API Key`} className="w-full p-3 border border-stone-200 rounded-lg mb-4 font-mono text-sm focus:border-indigo-500 outline-none transition-all" value={key} onChange={(e) => setKey(e.target.value)} />
+                        <button onClick={() => onConfirm({ apiKey: key, provider })} className="w-full py-3 bg-indigo-600 text-white text-xs uppercase tracking-widest font-bold hover:bg-indigo-700 transition-colors rounded-lg shadow-sm mb-4">Initialize Lens</button>
+                        <button onClick={() => setShowGuide(!showGuide)} className="flex items-center gap-2 text-xs font-medium text-stone-400 hover:text-indigo-600 transition-colors mx-auto"><Icon name="HelpCircle" size={14} /> Where do I get a key?</button>
+                        {showGuide && <div className="mt-4 p-4 bg-stone-50 text-xs text-stone-500 rounded-lg border border-stone-100 leading-relaxed">
+                            {provider === 'gemini' ? <span>1. Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" className="text-indigo-600 font-bold underline">Google AI Studio</a>.<br/>2. Create a free API Key.</span> : <span>1. Visit <a href="https://console.groq.com/keys" target="_blank" className="text-indigo-600 font-bold underline">Groq Console</a>.<br/>2. Create a free API Key.</span>}
+                        </div>}
+                    </div>
+                </div>
+            );
+        };
+
+        const DisclaimerModal = ({ onAccept, theme }) => (
+            <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+                <div className={`max-w-lg w-full ${theme.panel} ${theme.text} p-8 rounded-xl shadow-2xl border ${theme.border} animate-fade-in font-serif relative`}>
+                    <div className={`absolute top-0 left-0 w-full h-1 ${theme.accent.replace('text', 'bg')}`}></div>
+                    <div className={`flex items-center gap-3 mb-6 border-b ${theme.border} pb-4`}>
+                        <Icon name="Fingerprint" size={24} className={theme.accent} />
+                        <h2 className="text-lg font-bold uppercase tracking-widest">Access Protocol</h2>
+                    </div>
+                    <div className="space-y-4 text-sm leading-relaxed mb-8 font-sans opacity-90">
+                        <p><strong>The Archivist</strong> is a serendipity engine that aggregates content from public knowledge bases (Wikipedia, Google Books) and generative inference models.</p>
+                        <p>Automated summaries may not reflect current academic consensus. This tool assumes no liability for content accuracy. <span className="font-bold">Always consult primary sources for rigorous study.</span></p>
+                        <p className={`text-xs p-2 rounded border ${theme.border} bg-opacity-10`}><strong>AI Notice:</strong> "Scholar's Lens" features utilize external LLMs which may hallucinate facts.</p>
+                    </div>
+                    <button onClick={onAccept} className={`w-full py-4 ${theme.button} ${theme.buttonText} font-bold uppercase tracking-widest text-xs rounded-lg transition-colors flex items-center justify-center gap-2 font-sans shadow-lg`}>
+                        <Icon name="Check" /> Acknowledge & Enter Tool
+                    </button>
+                </div>
+            </div>
+        );
+
         // ==========================================
         // SECTION 5: MAIN APP CONTROLLER
         // ==========================================
@@ -737,7 +673,7 @@
             
             const [view, setView] = useState('spinner');
             const [activeTopics, setActiveTopics] = useState([]);
-            const [hoveredTopic, setHoveredTopic] = useState(null); // NEW: State for spinner hover
+            const [hoveredTopic, setHoveredTopic] = useState(null);
             const [selectedTopic, setSelectedTopic] = useState(null);
             const [rotation, setRotation] = useState(0);
             const [isSpinning, setIsSpinning] = useState(false);
@@ -746,82 +682,121 @@
             const [seedingMode, setSeedingMode] = useState("assorted");
             const [toast, setToast] = useState(null);
 
-            const theme = UI_THEMES[userSettings.theme];
+            const theme = UI_THEMES[userSettings.theme] || UI_THEMES['sepia'];
 
             const showToast = (msg) => {
                 setToast(msg);
                 setTimeout(() => setToast(null), 3000);
             };
 
-            // Load Background
+            // OPTIMIZATION: Debounced Hover Telemetry
+            // This prevents React from re-rendering the entire component tree on every single pixel of mouse movement
+            const hoverTimeoutRef = useRef(null);
+            const handleSpinnerHover = (topic) => {
+                if (isSpinning) return;
+                if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+                hoverTimeoutRef.current = setTimeout(() => {
+                    setHoveredTopic(topic);
+                }, 40); // 40ms debounce
+            };
+            
+            const clearSpinnerHover = () => {
+                if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+                setHoveredTopic(null);
+            };
+
             useEffect(() => {
                 document.body.style.backgroundColor = theme.bg;
-                if (userSettings.theme === 'sepia') {
-                    document.body.style.backgroundImage = `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E")`;
+                if (theme.grain) {
+                    document.body.classList.add('grain-overlay');
+                    // Using updated static style from archivist_style.css
                 } else {
-                    document.body.style.backgroundImage = 'none';
+                    document.body.classList.remove('grain-overlay');
                 }
-                return () => { document.body.style.backgroundImage = ''; };
+                return () => { };
             }, [userSettings.theme, theme]);
 
-            // Main Data Loader
-            const loadBatch = useCallback(async (modeOverride) => {
+            // Unified Navigation (Open Dossier)
+            const handleNavigate = async (title) => {
+                const d = await fetchWiki({ 
+                    action: 'query', titles: title, prop: 'extracts|info|categories', 
+                    inprop: 'length|touched', exintro: true, explaintext: true, cllimit: 15 
+                });
+                const p = Object.values(d?.query?.pages || {})[0];
+                
+                if (p && !p.missing) {
+                    const newTopic = { ...p, category: { domain: "Linked" } };
+                    setSelectedTopic(newTopic);
+                    setShowResult(true);
+                    setView('spinner'); // Ensure base view is spinner
+                }
+            };
+
+            const loadBatch = useCallback(async (modeOverride, ignoreUrlParams = false) => {
                 if (!ack) return;
                 setLoading(true);
                 
-                // 1. Check for Direct Topic Deep Link (?t=Title)
-                const urlParams = new URLSearchParams(window.location.search);
-                const topicParam = urlParams.get('t');
-                
-                if (topicParam) {
-                    // Bypass spinner completely
-                    handleNavigate(topicParam, null);
-                    // Clear the params so a refresh doesn't get stuck on the topic if user navigates back
-                    // optional, keeping it simple for now.
-                    setLoading(false);
-                    return;
-                }
+                let loadedFromHash = false;
 
-                // 2. Check for Session Hash (?s=Hash)
-                const sessionHash = urlParams.get('s');
-                if (sessionHash) {
-                    const restoredMinimal = deserializeSession(sessionHash);
-                    if (restoredMinimal && restoredMinimal.length) {
-                         try {
-                            const titlesParam = restoredMinimal.map(t => t.t).join('|');
-                            const detailsData = await fetchWiki({ 
-                                action: 'query', titles: titlesParam, 
-                                prop: 'extracts|info', inprop: 'length|touched', exintro: true, explaintext: true 
-                            });
-                            const pages = detailsData?.query?.pages || {};
-                            
-                            const reconstructed = restoredMinimal.map(min => {
-                                const page = Object.values(pages).find(p => p.title === min.t);
-                                if (!page) return null;
-                                return { ...page, category: { id: min.c, domain: min.d, label: min.l } };
-                            }).filter(x => x);
-                            
-                            if (reconstructed.length > 0) {
-                                setActiveTopics(reconstructed);
-                                setLoading(false);
-                                setRotation(0);
-                                return; 
-                            }
-                         } catch(e) { console.error("Rehydration failed", e); }
+                if (!ignoreUrlParams) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const topicParam = urlParams.get('t');
+                    const sessionHash = urlParams.get('s');
+
+                    if (sessionHash) {
+                        const restoredMinimal = deserializeSession(sessionHash);
+                        if (restoredMinimal && restoredMinimal.length) {
+                             try {
+                                const titlesParam = restoredMinimal.map(t => t.t).join('|');
+                                const detailsData = await fetchWiki({ 
+                                    action: 'query', titles: titlesParam, 
+                                    prop: 'extracts|info', inprop: 'length|touched', exintro: true, explaintext: true 
+                                });
+                                const pages = detailsData?.query?.pages || {};
+                                const reconstructed = restoredMinimal.map(min => {
+                                    const page = Object.values(pages).find(p => p.title === min.t);
+                                    if (!page) return null;
+                                    return { ...page, category: { id: min.c, domain: min.d, label: min.l } };
+                                }).filter(x => x);
+                                
+                                if (reconstructed.length > 0) {
+                                    setActiveTopics(reconstructed);
+                                    loadedFromHash = true;
+                                }
+                             } catch(e) { console.error("Rehydration failed", e); }
+                        }
+                    }
+
+                    if (topicParam) {
+                        handleNavigate(topicParam);
                     }
                 }
 
-                // 3. Standard Random Loading
-                const targetMode = modeOverride || seedingMode;
-                try {
-                    const topics = await fetchTopicBatch(userSettings.sectors, targetMode);
-                    if (topics.length > 0) setActiveTopics(topics);
-                } catch(e) { console.error(e); }
+                if (!loadedFromHash) {
+                    const targetMode = modeOverride || seedingMode;
+                    try {
+                        const topics = await fetchTopicBatch(userSettings.sectors, targetMode);
+                        if (topics.length > 0) setActiveTopics(topics);
+                    } catch(e) { console.error(e); }
+                }
+
                 setLoading(false);
                 setRotation(0);
             }, [seedingMode, userSettings.sectors, ack]);
 
-            useEffect(() => { loadBatch(); }, [loadBatch]);
+            useEffect(() => { loadBatch(null, false); }, [loadBatch]);
+
+            const handleDiscard = () => {
+                setShowResult(false);
+                setSelectedTopic(null); 
+                setView('spinner'); 
+            };
+
+            const handleRefresh = () => {
+                loadBatch(null, true);
+                setShowResult(false);
+                setSelectedTopic(null);
+            };
 
             const handleShareSession = () => {
                 const hash = serializeSession(activeTopics);
@@ -846,35 +821,13 @@
                 }, 4000);
             };
 
-            const handleNavigate = async (title, parentDomain) => {
-                setView('loading_direct');
-                const d = await fetchWiki({ 
-                    action: 'query', titles: title, prop: 'extracts|info|categories', 
-                    inprop: 'length|touched', exintro: true, explaintext: true, cllimit: 15 
-                });
-                const p = Object.values(d?.query?.pages || {})[0];
-                
-                if (p && !p.missing) {
-                    let inferred = inferDomain(p.categories);
-                    if (inferred === "General" && parentDomain) inferred = parentDomain;
-                    
-                    const newTopic = { ...p, category: { domain: inferred } }; 
-                    setSelectedTopic(newTopic);
-                    setView('dashboard');
-                } else {
-                    setView('dashboard'); 
-                }
-            };
-
             const handleUrlInput = (url) => {
                 if (!url) return;
                 try {
                     const match = url.match(/\/wiki\/([^#?]+)/) || url.match(/title=([^&]+)/);
                     const title = match ? decodeURIComponent(match[1]).replace(/_/g, ' ') : url;
-                    handleNavigate(title, null);
-                } catch(e) {
-                    console.error("Invalid URL", e);
-                }
+                    handleNavigate(title);
+                } catch(e) { console.error("Invalid URL", e); }
             };
 
             const toggleSession = () => {
@@ -888,7 +841,7 @@
             const changeSeeding = (e) => {
                 const newMode = e.target.value;
                 setSeedingMode(newMode);
-                loadBatch(newMode);
+                loadBatch(newMode, true);
             };
 
             return (
@@ -916,7 +869,7 @@
                                 {session.mode === 'augmented' ? "Scholar's Lens" : 'Standard Mode'}
                             </button>
                             {view === 'spinner' && (
-                                <button onClick={() => loadBatch()} disabled={isSpinning || loading} className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${theme.accent} hover:${theme.text} disabled:opacity-30 transition-colors`}>
+                                <button onClick={handleRefresh} disabled={isSpinning || loading} className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest ${theme.accent} hover:${theme.text} disabled:opacity-30 transition-colors`}>
                                    {loading ? <Icon name="Loader2" size={12} className="animate-spin" /> : <Icon name="RefreshCw" size={12} />}
                                    {loading ? 'Retrieving...' : 'Refresh'}
                                 </button>
@@ -965,7 +918,7 @@
                                           <div className={`w-px h-8 ${theme.pointerColor}`} style={{backgroundColor: theme.pointerColor}}></div>
                                           <div className={`w-3 h-3 rotate-45 -mt-1.5 ${theme.pointerColor}`} style={{backgroundColor: theme.pointerColor}}></div>
                                        </div>
-                                       <div className={`w-full h-full rounded-full border-[12px] shadow-2xl relative transition-transform duration-[4000ms] cubic-bezier(0.2, 0.8, 0.2, 1) overflow-hidden ${theme.panel}`} style={{ borderColor: userSettings.theme === 'sepia' ? '#e6dbc4' : theme.border.split('-')[1], transform: `rotate(${rotation}deg)` }}>
+                                       <div className={`w-full h-full rounded-full border-[12px] shadow-2xl relative transition-transform duration-[4000ms] cubic-bezier(0.2, 0.8, 0.2, 1) overflow-hidden ${theme.panel}`} style={{ borderColor: theme.border.includes('-') ? theme.border.split('-')[1] : '#d6cbb0', transform: `rotate(${rotation}deg)` }}>
                                          <div className={`absolute inset-0 m-2 rounded-full border ${theme.border} opacity-50`}></div>
                                          <div className={`absolute inset-0 m-32 rounded-full border ${theme.border} bg-opacity-20`}></div>
                                          {activeTopics.map((topic, index) => {
@@ -980,8 +933,8 @@
                                                 <div 
                                                     className={`w-full h-full border-l ${theme.border} flex items-center justify-center pt-16 hover:bg-black/5 transition-colors cursor-pointer group`} 
                                                     style={{ transform: `skewY(${90 - (360/count)}deg) rotate(${360 / count / 2}deg)` }}
-                                                    onMouseEnter={() => !isSpinning && setHoveredTopic(topic)}
-                                                    onMouseLeave={() => setHoveredTopic(null)}
+                                                    onMouseEnter={() => handleSpinnerHover(topic)}
+                                                    onMouseLeave={clearSpinnerHover}
                                                 >
                                                    <div className={`transform -rotate-90 translate-x-12 w-32 flex flex-col items-center justify-center ${theme.text} opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all`}>
                                                       {getDomainIcon(topic.category?.domain, count > 4 ? 24 : 32, "stroke-[1.5]")}
@@ -992,7 +945,6 @@
                                          })}
                                        </div>
                                        
-                                       {/* Spinner Central Hub - Shows Hover Info */}
                                        <div className={`absolute top-1/2 left-1/2 w-32 h-32 ${theme.spinnerBg} rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] border ${theme.border} flex flex-col items-center justify-center p-4 text-center z-30 transition-all duration-300`}>
                                          {hoveredTopic && !isSpinning ? (
                                             <div className="animate-fade-in">
@@ -1014,21 +966,21 @@
 
                                     {/* Direct Access Module */}
                                     <div className={`w-full p-1 rounded-xl ${theme.border} border bg-opacity-50 flex flex-col items-center transition-all animate-fade-in hover:shadow-md`}>
-                                        <div className={`w-full ${theme.panel} rounded-lg p-3 flex items-center gap-3`}>
-                                            <div className="p-2 bg-black/5 rounded text-indigo-500">
+                                        <div className={`w-full ${theme.panel} rounded-lg p-3 flex flex-col sm:flex-row items-center gap-3`}>
+                                            <div className="hidden sm:block p-2 bg-black/5 rounded text-indigo-500">
                                                 <Icon name="Link" size={14} />
                                             </div>
-                                            <div className="flex-1">
+                                            <div className="w-full flex-1">
                                                 <input 
                                                     type="text" 
                                                     placeholder="Paste direct Wikipedia URL or Topic Title..." 
-                                                    className={`w-full bg-transparent text-sm font-bold ${theme.text} outline-none placeholder:opacity-40 placeholder:font-normal font-sans`}
+                                                    className={`w-full bg-transparent text-sm font-bold ${theme.text} outline-none placeholder:opacity-40 placeholder:font-normal font-sans text-center sm:text-left`}
                                                     onKeyDown={(e) => e.key === 'Enter' && handleUrlInput(e.target.value)}
                                                 />
                                             </div>
                                             <button 
                                                 onClick={(e) => handleUrlInput(e.target.previousSibling.querySelector('input').value)} 
-                                                className={`px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider ${theme.text} hover:bg-black/5 transition-colors border border-transparent hover:${theme.border}`}
+                                                className={`w-full sm:w-auto px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider ${theme.text} hover:bg-black/5 transition-colors border border-transparent hover:${theme.border}`}
                                             >
                                                 Load Dossier
                                             </button>
@@ -1039,7 +991,7 @@
                         )}
                         
                         {view === 'dashboard' && selectedTopic && (
-                            <Dashboard topic={selectedTopic} session={session} theme={theme} onBack={() => { setView('spinner'); setShowResult(false); }} onNavigate={handleNavigate} onToast={showToast} />
+                            <Dashboard topic={selectedTopic} session={session} theme={theme} onBack={handleDiscard} onNavigate={handleNavigate} onToast={showToast} />
                         )}
                     </main>
 
@@ -1047,12 +999,12 @@
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm animate-in fade-in">
                             <div className={`${theme.panel} max-w-md w-full p-12 shadow-2xl relative rounded-xl text-center border ${theme.border}`}>
                                 <div className={`absolute -top-3 left-1/2 -translate-x-1/2 ${theme.button} ${theme.buttonText} px-4 py-1.5 text-[10px] uppercase tracking-widest font-bold rounded-full shadow-lg`}>File Retrieved</div>
-                                <div className={`mb-6 opacity-60 flex justify-center ${theme.text}`}>{selectedTopic.category && getDomainIcon(selectedTopic.category.domain, 48)}</div>
-                                <h2 className={`text-3xl font-serif ${theme.text} mb-6 leading-tight`}>{selectedTopic.title}</h2>
+                                
+                                <h2 className={`text-3xl font-serif ${theme.text} mb-6 leading-tight mt-6`}>{selectedTopic.title}</h2>
                                 <div className={`w-8 h-1 ${theme.border} border-t-4 mx-auto mb-8`}></div>
                                 <p className={`${theme.accent} mb-10 leading-relaxed font-serif italic text-sm`}>"{cleanText(selectedTopic.extract).substring(0, 150)}..."</p>
                                 <button onClick={() => setView('dashboard')} className={`w-full py-4 ${theme.button} ${theme.buttonText} text-[10px] uppercase tracking-[0.2em] transition-colors rounded-lg font-bold shadow-xl border-none`}>Examine File</button>
-                                <button onClick={() => setShowResult(false)} className={`mt-4 ${theme.accent} hover:${theme.text} text-[10px] uppercase tracking-widest block w-full`}>Discard & Return</button>
+                                <button onClick={handleDiscard} className={`mt-4 ${theme.accent} hover:${theme.text} text-[10px] uppercase tracking-widest block w-full`}>Discard & Return</button>
                             </div>
                         </div>
                     )}
