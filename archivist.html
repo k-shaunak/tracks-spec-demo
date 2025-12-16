@@ -156,23 +156,20 @@
         // --- SESSION SERIALIZATION ---
         const serializeSession = (topics) => {
             if (!topics || !topics.length) return "";
-            // We store a minimal representation: Title + Category Info
             const minimal = topics.map(t => ({
                 t: t.title,
                 c: t.category.id,
                 d: t.category.domain,
                 l: t.category.label
             }));
-            try {
-                return btoa(JSON.stringify(minimal));
-            } catch(e) { console.error("Hash Gen Error", e); return ""; }
+            try { return btoa(JSON.stringify(minimal)); } 
+            catch(e) { console.error("Hash Gen Error", e); return ""; }
         };
 
         const deserializeSession = (hash) => {
             if (!hash) return null;
-            try {
-                return JSON.parse(atob(hash));
-            } catch(e) { console.error("Hash Parse Error", e); return null; }
+            try { return JSON.parse(atob(hash)); } 
+            catch(e) { console.error("Hash Parse Error", e); return null; }
         };
 
         // --- ICON SYSTEM ---
@@ -205,7 +202,6 @@
         // ==========================================
         
         // NOTE: CATEGORY_MAP is loaded from category_map.js
-        // Fallback for preview mode only if file missing
         const MAP_DATA = (typeof window.CATEGORY_MAP !== 'undefined') ? window.CATEGORY_MAP : [];
 
         const EXTERNAL_RESOURCES = {
@@ -289,7 +285,7 @@
         };
 
         const fetchTopicBatch = async (sectors, seedMode) => {
-            if (!MAP_DATA.length) return []; // Guard if map fails to load
+            if (!MAP_DATA.length) return []; 
 
             let selectedCats = [];
             
@@ -525,12 +521,12 @@
             );
         };
 
-        const Dashboard = ({ topic, session, theme, onBack, onNavigate }) => {
+        const Dashboard = ({ topic, session, theme, onBack, onNavigate, onToast }) => {
             const [extras, setExtras] = useState(null);
             const [loadingExtras, setLoadingExtras] = useState(true);
             const [aiSynthesis, setAiSynthesis] = useState(null);
             
-            // Use inferred domain logic if direct category mapping fails (common in cross-refs)
+            // Use inferred domain logic if direct category mapping fails
             const domain = topic.category?.domain || inferDomain(topic.categories) || "General";
             const externalSources = EXTERNAL_RESOURCES[domain] || EXTERNAL_RESOURCES["Science"];
 
@@ -550,13 +546,24 @@
                 init();
             }, [topic, session]);
 
+            const shareDossier = () => {
+                const url = `${window.location.origin}${window.location.pathname}?t=${encodeURIComponent(topic.title)}`;
+                navigator.clipboard.writeText(url);
+                onToast("Dossier Link Copied");
+            };
+
             return (
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-6xl mx-auto w-full pb-20">
                     <div className={`mb-8 border-b ${theme.border} pb-4 flex justify-between items-center`}>
-                        <button onClick={onBack} className={`group flex items-center ${theme.accent} hover:${theme.text} text-xs font-bold transition-colors uppercase tracking-widest font-sans`}>
-                            <Icon name="ChevronLeft" size={14} className="mr-1 group-hover:-translate-x-1 transition-transform" /> Index
+                        <div className="flex items-center gap-4">
+                            <button onClick={onBack} className={`group flex items-center ${theme.accent} hover:${theme.text} text-xs font-bold transition-colors uppercase tracking-widest font-sans`}>
+                                <Icon name="ChevronLeft" size={14} className="mr-1 group-hover:-translate-x-1 transition-transform" /> Index
+                            </button>
+                            <span className={`text-[10px] uppercase tracking-widest font-bold ${theme.accent}`}>{session.mode === 'augmented' ? "Scholar's Lens Active" : 'Standard Access'}</span>
+                        </div>
+                        <button onClick={shareDossier} className={`text-[10px] font-bold uppercase tracking-widest ${theme.accent} hover:${theme.text} flex items-center gap-2 transition-colors`}>
+                            <Icon name="Link" size={12} /> Share Dossier
                         </button>
-                        <span className={`text-[10px] uppercase tracking-widest font-bold ${theme.accent}`}>{session.mode === 'augmented' ? "Scholar's Lens Active" : 'Standard Access'}</span>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -730,6 +737,7 @@
             
             const [view, setView] = useState('spinner');
             const [activeTopics, setActiveTopics] = useState([]);
+            const [hoveredTopic, setHoveredTopic] = useState(null); // NEW: State for spinner hover
             const [selectedTopic, setSelectedTopic] = useState(null);
             const [rotation, setRotation] = useState(0);
             const [isSpinning, setIsSpinning] = useState(false);
@@ -739,6 +747,11 @@
             const [toast, setToast] = useState(null);
 
             const theme = UI_THEMES[userSettings.theme];
+
+            const showToast = (msg) => {
+                setToast(msg);
+                setTimeout(() => setToast(null), 3000);
+            };
 
             // Load Background
             useEffect(() => {
@@ -751,19 +764,29 @@
                 return () => { document.body.style.backgroundImage = ''; };
             }, [userSettings.theme, theme]);
 
-            // Spinner Data Loader
+            // Main Data Loader
             const loadBatch = useCallback(async (modeOverride) => {
                 if (!ack) return;
                 setLoading(true);
                 
-                // Check URL for session hash first
+                // 1. Check for Direct Topic Deep Link (?t=Title)
                 const urlParams = new URLSearchParams(window.location.search);
-                const sessionHash = urlParams.get('s');
+                const topicParam = urlParams.get('t');
                 
+                if (topicParam) {
+                    // Bypass spinner completely
+                    handleNavigate(topicParam, null);
+                    // Clear the params so a refresh doesn't get stuck on the topic if user navigates back
+                    // optional, keeping it simple for now.
+                    setLoading(false);
+                    return;
+                }
+
+                // 2. Check for Session Hash (?s=Hash)
+                const sessionHash = urlParams.get('s');
                 if (sessionHash) {
                     const restoredMinimal = deserializeSession(sessionHash);
                     if (restoredMinimal && restoredMinimal.length) {
-                         // Rehydrate full data from minimal
                          try {
                             const titlesParam = restoredMinimal.map(t => t.t).join('|');
                             const detailsData = await fetchWiki({ 
@@ -782,13 +805,13 @@
                                 setActiveTopics(reconstructed);
                                 setLoading(false);
                                 setRotation(0);
-                                return; // EXIT EARLY
+                                return; 
                             }
                          } catch(e) { console.error("Rehydration failed", e); }
                     }
                 }
 
-                // Standard Loading (Random)
+                // 3. Standard Random Loading
                 const targetMode = modeOverride || seedingMode;
                 try {
                     const topics = await fetchTopicBatch(userSettings.sectors, targetMode);
@@ -800,12 +823,11 @@
 
             useEffect(() => { loadBatch(); }, [loadBatch]);
 
-            const handleShare = () => {
+            const handleShareSession = () => {
                 const hash = serializeSession(activeTopics);
                 const url = `${window.location.origin}${window.location.pathname}?s=${hash}`;
                 navigator.clipboard.writeText(url);
-                setToast("Session URL copied to clipboard");
-                setTimeout(() => setToast(null), 3000);
+                showToast("Session URL copied to clipboard");
             };
 
             const handleSpin = () => {
@@ -826,7 +848,6 @@
 
             const handleNavigate = async (title, parentDomain) => {
                 setView('loading_direct');
-                // Use efficient single fetch
                 const d = await fetchWiki({ 
                     action: 'query', titles: title, prop: 'extracts|info|categories', 
                     inprop: 'length|touched', exintro: true, explaintext: true, cllimit: 15 
@@ -834,29 +855,23 @@
                 const p = Object.values(d?.query?.pages || {})[0];
                 
                 if (p && !p.missing) {
-                    // Smart domain inference since cross-links often lack explicit domain tags
                     let inferred = inferDomain(p.categories);
-                    
-                    // IMPROVED LOGIC: If inference returns "General" but we came from a specific domain, inherit it.
-                    if (inferred === "General" && parentDomain) {
-                        inferred = parentDomain;
-                    }
+                    if (inferred === "General" && parentDomain) inferred = parentDomain;
                     
                     const newTopic = { ...p, category: { domain: inferred } }; 
                     setSelectedTopic(newTopic);
                     setView('dashboard');
                 } else {
-                    setView('dashboard'); // Fallback
+                    setView('dashboard'); 
                 }
             };
 
             const handleUrlInput = (url) => {
                 if (!url) return;
                 try {
-                    // Handle full URLs like https://en.wikipedia.org/wiki/Philosophy or just titles
                     const match = url.match(/\/wiki\/([^#?]+)/) || url.match(/title=([^&]+)/);
                     const title = match ? decodeURIComponent(match[1]).replace(/_/g, ' ') : url;
-                    handleNavigate(title, null); // Direct entry has no parent domain
+                    handleNavigate(title, null);
                 } catch(e) {
                     console.error("Invalid URL", e);
                 }
@@ -929,9 +944,8 @@
                                         <Icon name="ChevronLeft" size={10} className={`${theme.accent} -rotate-90 absolute right-6 pointer-events-none`} />
                                     </div>
                                     
-                                    {/* Session Hash Share Button */}
                                     <button 
-                                        onClick={handleShare}
+                                        onClick={handleShareSession}
                                         disabled={loading || !activeTopics.length}
                                         className={`flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold ${theme.accent} hover:text-indigo-600 transition-colors opacity-60 hover:opacity-100`}
                                     >
@@ -958,8 +972,17 @@
                                             const count = activeTopics.length;
                                             const rotate = index * (360 / count);
                                             return (
-                                              <div key={topic.pageid} className="absolute top-0 right-0 w-[50%] h-[50%] origin-bottom-left" style={{ transform: `rotate(${rotate}deg) skewY(-${90 - (360/count)}deg)` }}>
-                                                <div className={`w-full h-full border-l ${theme.border} flex items-center justify-center pt-16 hover:bg-black/5 transition-colors cursor-pointer group`} style={{ transform: `skewY(${90 - (360/count)}deg) rotate(${360 / count / 2}deg)` }}>
+                                              <div 
+                                                key={topic.pageid} 
+                                                className="absolute top-0 right-0 w-[50%] h-[50%] origin-bottom-left" 
+                                                style={{ transform: `rotate(${rotate}deg) skewY(-${90 - (360/count)}deg)` }}
+                                              >
+                                                <div 
+                                                    className={`w-full h-full border-l ${theme.border} flex items-center justify-center pt-16 hover:bg-black/5 transition-colors cursor-pointer group`} 
+                                                    style={{ transform: `skewY(${90 - (360/count)}deg) rotate(${360 / count / 2}deg)` }}
+                                                    onMouseEnter={() => !isSpinning && setHoveredTopic(topic)}
+                                                    onMouseLeave={() => setHoveredTopic(null)}
+                                                >
                                                    <div className={`transform -rotate-90 translate-x-12 w-32 flex flex-col items-center justify-center ${theme.text} opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all`}>
                                                       {getDomainIcon(topic.category?.domain, count > 4 ? 24 : 32, "stroke-[1.5]")}
                                                    </div>
@@ -968,8 +991,17 @@
                                             );
                                          })}
                                        </div>
-                                       <div className={`absolute top-1/2 left-1/2 w-24 h-24 ${theme.spinnerBg} rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] border ${theme.border} flex items-center justify-center`}>
-                                         <Icon name="Search" size={24} className={`${theme.accent} opacity-50`}/>
+                                       
+                                       {/* Spinner Central Hub - Shows Hover Info */}
+                                       <div className={`absolute top-1/2 left-1/2 w-32 h-32 ${theme.spinnerBg} rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)] border ${theme.border} flex flex-col items-center justify-center p-4 text-center z-30 transition-all duration-300`}>
+                                         {hoveredTopic && !isSpinning ? (
+                                            <div className="animate-fade-in">
+                                                <p className={`text-[9px] font-bold uppercase tracking-widest ${theme.accent} mb-1 line-clamp-1`}>{hoveredTopic.category?.label}</p>
+                                                <p className={`text-xs font-serif font-bold ${theme.text} leading-tight line-clamp-2`}>{hoveredTopic.title}</p>
+                                            </div>
+                                         ) : (
+                                            <Icon name="Search" size={24} className={`${theme.accent} opacity-50`}/>
+                                         )}
                                        </div>
                                      </>
                                    )}
@@ -1007,7 +1039,7 @@
                         )}
                         
                         {view === 'dashboard' && selectedTopic && (
-                            <Dashboard topic={selectedTopic} session={session} theme={theme} onBack={() => { setView('spinner'); setShowResult(false); }} onNavigate={handleNavigate} />
+                            <Dashboard topic={selectedTopic} session={session} theme={theme} onBack={() => { setView('spinner'); setShowResult(false); }} onNavigate={handleNavigate} onToast={showToast} />
                         )}
                     </main>
 
