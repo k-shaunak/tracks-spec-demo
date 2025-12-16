@@ -27,7 +27,8 @@
                     animation: {
                         'spin-slow': 'spin 3s linear infinite',
                         'fade-in': 'fadeIn 0.5s ease-out',
-                        'slide-up': 'slideUp 0.5s ease-out'
+                        'slide-up': 'slideUp 0.5s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                     },
                     keyframes: {
                         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
@@ -44,6 +45,9 @@
     
     <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- External Category Map -->
+    <script src="category_map.js"></script>
 
     <style>
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -105,32 +109,24 @@
             }
         };
 
-        // --- IMPROVED TEXT CLEANER ---
-        // Handles more edge cases for LaTeX and MediaWiki artifacts
         const cleanText = (text) => {
             if (!text) return "";
             return text
-                // Remove specific MediaWiki LaTeX commands
                 .replace(/\\displaystyle/g, '')
                 .replace(/\\mathbb\{.*?\}/g, '')
                 .replace(/\\mathcal\{.*?\}/g, '')
                 .replace(/\\mathbf\{.*?\}/g, '')
                 .replace(/\\mathrm\{.*?\}/g, '')
-                .replace(/\\ce\{.*?\}/g, '') // Chemistry
-                // Flatten nested LaTeX groups but keep content if it looks like text
+                .replace(/\\ce\{.*?\}/g, '')
                 .replace(/{\\.*?{(.*?)}}/g, '$1') 
-                // Remove citations [1], [2]
                 .replace(/\[\d+\]/g, '')
                 .replace(/\[.*?\]/g, '')
-                // Remove pronunciation guides and empty parens left behind
                 .replace(/\(listen\)/g, '')
                 .replace(/\(\s*\)/g, '')
-                .replace(/  /g, ' ') // Collapse double spaces
+                .replace(/  /g, ' ')
                 .trim();
         };
 
-        // --- IMPROVED DOMAIN INFERENCE ---
-        // Uses keyword matching on categories to guess the domain of a new topic
         const inferDomain = (categories = []) => {
             if (!categories || !categories.length) return "General";
             const combined = categories.map(c => c.title.toLowerCase()).join(' ');
@@ -157,6 +153,28 @@
             return true;
         };
 
+        // --- SESSION SERIALIZATION ---
+        const serializeSession = (topics) => {
+            if (!topics || !topics.length) return "";
+            // We store a minimal representation: Title + Category Info
+            const minimal = topics.map(t => ({
+                t: t.title,
+                c: t.category.id,
+                d: t.category.domain,
+                l: t.category.label
+            }));
+            try {
+                return btoa(JSON.stringify(minimal));
+            } catch(e) { console.error("Hash Gen Error", e); return ""; }
+        };
+
+        const deserializeSession = (hash) => {
+            if (!hash) return null;
+            try {
+                return JSON.parse(atob(hash));
+            } catch(e) { console.error("Hash Parse Error", e); return null; }
+        };
+
         // --- ICON SYSTEM ---
         const FA_MAP = {
             BookOpen: "fa-book-open", RefreshCw: "fa-arrows-rotate", ChevronLeft: "fa-chevron-left",
@@ -173,7 +191,8 @@
             Cpu: "fa-microchip", Anchor: "fa-anchor", Gavel: "fa-gavel", Briefcase: "fa-briefcase",
             Calculator: "fa-calculator", Building: "fa-building", Vote: "fa-check-to-slot", Rocket: "fa-rocket",
             Leaf: "fa-leaf", Microscope: "fa-microscope", PenTool: "fa-pen-nib", Sigma: "fa-sigma", Divide: "fa-divide",
-            Check: "fa-check", Shield: "fa-shield-halved", Fingerprint: "fa-fingerprint", Image: "fa-image"
+            Check: "fa-check", Shield: "fa-shield-halved", Fingerprint: "fa-fingerprint", Image: "fa-image",
+            Link: "fa-link", Share: "fa-share-nodes", Copy: "fa-copy"
         };
 
         const Icon = ({ name, size = 16, className = "" }) => {
@@ -184,221 +203,10 @@
         // ==========================================
         // SECTION 2: CORPUS
         // ==========================================
-	 const CATEGORY_MAP = [
-            // Philosophy
-            { id: "Category:Philosophical_concepts", domain: "Philosophy", label: "General Philosophy" },
-            { id: "Category:Epistemology", domain: "Philosophy", label: "Epistemology" },
-            { id: "Category:Ethics", domain: "Philosophy", label: "Ethics" },
-            { id: "Category:Paradoxes", domain: "Philosophy", label: "Paradoxes" },
-            { id: "Category:Metaphysics", domain: "Philosophy", label: "Metaphysics" },
-            { id: "Category:Existentialism", domain: "Philosophy", label: "Existentialism" },
-            { id: "Category:Political_philosophy", domain: "Philosophy", label: "Political Phil." },
-            { id: "Category:Phenomenology", domain: "Philosophy", label: "Phenomenology" },
-            { id: "Category:Logic", domain: "Philosophy", label: "Formal Logic" },
-            { id: "Category:Philosophy_of_mind", domain: "Philosophy", label: "Phil. of Mind" },
-            { id: "Category:Post-structuralism", domain: "Philosophy", label: "Post-structuralism" },
-            { id: "Category:Eastern_philosophy", domain: "Philosophy", label: "Eastern Phil." },
-            { id: "Category:Aesthetics", domain: "Philosophy", label: "Aesthetics" },
-            { id: "Category:Stoicism", domain: "Philosophy", label: "Stoicism" },
-            { id: "Category:Utilitarianism", domain: "Philosophy", label: "Utilitarianism" },
-            { id: "Category:Philosophy_of_science", domain: "Philosophy", label: "Phil. of Science" },
-            { id: "Category:Bioethics", domain: "Philosophy", label: "Bioethics" },
-            { id: "Category:Environmental_ethics", domain: "Philosophy", label: "Env. Ethics" },
-            { id: "Category:Theology", domain: "Philosophy", label: "Theology" },
-            { id: "Category:Enlightenment_philosophy", domain: "Philosophy", label: "The Enlightenment" },
-            { id: "Category:Analytic_philosophy", domain: "Philosophy", label: "Analytic Phil." },
-            { id: "Category:Continental_philosophy", domain: "Philosophy", label: "Continental Phil." },
-
-            // Social Sciences
-            { id: "Category:Cultural_anthropology", domain: "Social Science", label: "Cultural Anthro" },
-            { id: "Category:Social_psychology", domain: "Social Science", label: "Social Psych" },
-            { id: "Category:Developmental_psychology", domain: "Social Science", label: "Dev. Psych" },
-            { id: "Category:Human_geography", domain: "Social Science", label: "Human Geography" },
-            { id: "Category:Demography", domain: "Social Science", label: "Demography" },
-            { id: "Category:Criminology", domain: "Social Science", label: "Criminology" },
-            { id: "Category:Media_studies", domain: "Social Science", label: "Media Studies" },
-            { id: "Category:Social_stratification", domain: "Social Science", label: "Social Stratification" },
-            { id: "Category:Cognitive_biases", domain: "Social Science", label: "Cognitive Biases" },
-            { id: "Category:Archetypes", domain: "Social Science", label: "Archetypes" },
-            { id: "Category:Cyberculture", domain: "Social Science", label: "Cyberculture" },
-            { id: "Category:Urban_sociology", domain: "Social Science", label: "Urban Sociology" },
-            { id: "Category:Anthropology_of_religion", domain: "Social Science", label: "Anthro of Religion" },
-            { id: "Category:Environmental_social_science", domain: "Social Science", label: "Env. Social Science" },
-            { id: "Category:Science_and_technology_studies", domain: "Social Science", label: "STS" },
-            { id: "Category:Linguistics", domain: "Social Science", label: "Linguistics" },
-            { id: "Category:Sociolinguistics", domain: "Social Science", label: "Sociolinguistics" },
-            { id: "Category:Social_movements", domain: "Social Science", label: "Social Movements" },
-            { id: "Category:Globalization", domain: "Social Science", label: "Globalization" },
-
-            // Science
-            { id: "Category:Scientific_theories", domain: "Science", label: "Scientific Theories" },
-            { id: "Category:Physical_cosmology", domain: "Science", label: "Cosmology" },
-            { id: "Category:Cognitive_science", domain: "Science", label: "Cognitive Science" },
-            { id: "Category:Fluid_dynamics", domain: "Science", label: "Fluid Dynamics" },
-            { id: "Category:Oceanography", domain: "Science", label: "Oceanography" },
-            { id: "Category:Materials_science", domain: "Science", label: "Material Science" },
-            { id: "Category:Quantum_mechanics", domain: "Science", label: "Quantum Mechanics" },
-            { id: "Category:Complexity_theory", domain: "Science", label: "Complexity Theory" },
-            { id: "Category:Cybernetics", domain: "Science", label: "Cybernetics" },
-            { id: "Category:String_theory", domain: "Science", label: "String Theory" },
-            { id: "Category:Evolutionary_biology", domain: "Science", label: "Evolutionary Bio" },
-            { id: "Category:Chaos_theory", domain: "Science", label: "Chaos Theory" },
-            { id: "Category:Neuroscience", domain: "Science", label: "Neuroscience" },
-            { id: "Category:Behavioral_genetics", domain: "Science", label: "Behavioral Genetics" },
-            { id: "Category:Climatology", domain: "Science", label: "Climatology" },
-            { id: "Category:Immunology", domain: "Science", label: "Immunology" },
-            { id: "Category:Astrophysics", domain: "Science", label: "Astrophysics" },
-            { id: "Category:Glaciology", domain: "Science", label: "Glaciology" },
-            { id: "Category:Public_health", domain: "Science", label: "Public Health" },
-            { id: "Category:History_of_medicine", domain: "Science", label: "Hist. of Medicine" },
-            { id: "Category:Artificial_intelligence", domain: "Science", label: "AI Theory" },
-            { id: "Category:Cryptography", domain: "Science", label: "Cryptography" },
-            { id: "Category:Nanotechnology", domain: "Science", label: "Nanotechnology" },
-            { id: "Category:Forensic_science", domain: "Science", label: "Forensic Science" },
-            { id: "Category:Quantum_computing", domain: "Science", label: "Quantum Computing" },
-            { id: "Category:Renewable_energy", domain: "Science", label: "Renewable Energy" },
-            { id: "Category:Spaceflight", domain: "Science", label: "Spaceflight" },
-            { id: "Category:Mycology", domain: "Science", label: "Mycology" },
-            { id: "Category:Ornithology", domain: "Science", label: "Ornithology" },
-            { id: "Category:Entomology", domain: "Science", label: "Entomology" },
-            { id: "Category:Botany", domain: "Science", label: "Botany" },
-            { id: "Category:Astrobiology", domain: "Science", label: "Astrobiology" },
-            { id: "Category:Network_science", domain: "Science", label: "Network Science" },
-            { id: "Category:Data_science", domain: "Science", label: "Data Science" },
-            { id: "Category:Thermodynamics", domain: "Science", label: "Thermodynamics" },
-            { id: "Category:Particle_physics", domain: "Science", label: "Particle Physics" },
-            { id: "Category:Optics", domain: "Science", label: "Optics" },
-
-            // Arts & Culture
-            { id: "Category:Art_movements", domain: "Arts", label: "Art Movements" },
-            { id: "Category:Architectural_styles", domain: "Arts", label: "Architecture" },
-            { id: "Category:Music_theory", domain: "Arts", label: "Music Theory" },
-            { id: "Category:Urban_planning", domain: "Arts", label: "Urban Planning" },
-            { id: "Category:Game_studies", domain: "Arts", label: "Game Studies" },
-            { id: "Category:Film_noir", domain: "Arts", label: "Film Noir" },
-            { id: "Category:Typography", domain: "Arts", label: "Typography" },
-            { id: "Category:Bauhaus", domain: "Arts", label: "The Bauhaus" },
-            { id: "Category:Brutalist_architecture", domain: "Arts", label: "Brutalism" },
-            { id: "Category:Film_theory", domain: "Arts", label: "Film Theory" },
-            { id: "Category:Classical_music_eras", domain: "Arts", label: "Classical Music" },
-            { id: "Category:Art_Deco", domain: "Arts", label: "Art Deco" },
-            { id: "Category:Comparative_literature", domain: "Arts", label: "Comp. Literature" },
-            { id: "Category:Art_history_methods", domain: "Arts", label: "Art History Methods" },
-            { id: "Category:Surrealism", domain: "Arts", label: "Surrealism" },
-            { id: "Category:Renaissance_art", domain: "Arts", label: "Renaissance Art" },
-            { id: "Category:Literary_theory", domain: "Arts", label: "Literary Theory" },
-            { id: "Category:Postmodern_literature", domain: "Arts", label: "Postmodern Lit." },
-            { id: "Category:Abstract_expressionism", domain: "Arts", label: "Abstract Exp." },
-            { id: "Category:Neoclassicism", domain: "Arts", label: "Neoclassicism" },
-            { id: "Category:Victorian_literature", domain: "Arts", label: "Victorian Lit." },
-            { id: "Category:Romanticism", domain: "Arts", label: "Romanticism" },
-            { id: "Category:Magical_realism", domain: "Arts", label: "Magical Realism" },
-            { id: "Category:Cyberpunk", domain: "Arts", label: "Cyberpunk" },
-            { id: "Category:Gothic_fiction", domain: "Arts", label: "Gothic Fiction" },
-            { id: "Category:Calligraphy", domain: "Arts", label: "Calligraphy" },
-            { id: "Category:Pottery", domain: "Arts", label: "Pottery" },
-            { id: "Category:Textile_arts", domain: "Arts", label: "Textile Arts" },
-            { id: "Category:Printmaking", domain: "Arts", label: "Printmaking" },
-            { id: "Category:Modernist_literature", domain: "Arts", label: "Modernism" },
-            { id: "Category:Beat_Generation", domain: "Arts", label: "Beat Generation" },
-            { id: "Category:Renaissance_literature", domain: "Arts", label: "Renaissance Lit." },
-
-            // History & Politics
-            { id: "Category:Ancient_civilizations", domain: "History", label: "Ancient History" },
-            { id: "Category:Sociological_theories", domain: "History", label: "Sociology" },
-            { id: "Category:Linguistics", domain: "History", label: "Linguistics" },
-            { id: "Category:Archaeology", domain: "History", label: "Archaeology" },
-            { id: "Category:Classical_mythology", domain: "History", label: "Mythology" },
-            { id: "Category:Political_geography", domain: "History", label: "Geopolitics" },
-            { id: "Category:Historiography", domain: "History", label: "Historiography" },
-            { id: "Category:World_mythology", domain: "History", label: "World Mythology" },
-            { id: "Category:Military_history", domain: "History", label: "Military History" },
-            { id: "Category:Diplomatic_history", domain: "History", label: "Diplomatic History" },
-            { id: "Category:Intellectual_history", domain: "History", label: "Intellectual History" },
-            { id: "Category:History_of_science", domain: "History", label: "History of Science" },
-            { id: "Category:Comparative_religion", domain: "History", label: "Comp. Religion" },
-            { id: "Category:Cartography", domain: "History", label: "Cartography" },
-            { id: "Category:Numismatics", domain: "History", label: "Numismatics" },
-            { id: "Category:Vexillology", domain: "History", label: "Vexillology" },
-            { id: "Category:Feudal_Japan", domain: "History", label: "Feudal Japan" },
-            { id: "Category:Mesoamerican_civilizations", domain: "History", label: "Mesoamerica" },
-            { id: "Category:Cold_War", domain: "History", label: "Cold War" },
-            { id: "Category:Oral_history", domain: "History", label: "Oral History" },
-            { id: "Category:Genealogy", domain: "History", label: "Genealogy" },
-            { id: "Category:Psychohistory", domain: "History", label: "Psychohistory" },
-            { id: "Category:Microhistory", domain: "History", label: "Microhistory" },
-            { id: "Category:Industrial_Revolution", domain: "History", label: "Industrial Rev." },
-            { id: "Category:Age_of_Discovery", domain: "History", label: "Age of Discovery" },
-            { id: "Category:Silk_Road", domain: "History", label: "The Silk Road" },
-            
-            // Politics
-            { id: "Category:Political_ideologies", domain: "Politics", label: "Political Ideologies" },
-            { id: "Category:International_relations_theory", domain: "Politics", label: "IR Theory" },
-            { id: "Category:Forms_of_government", domain: "Politics", label: "Forms of Gov." },
-            { id: "Category:Public_policy", domain: "Politics", label: "Public Policy" },
-            { id: "Category:Voting_systems", domain: "Politics", label: "Voting Systems" },
-            { id: "Category:Postcolonialism", domain: "Politics", label: "Post-Colonialism" },
-            { id: "Category:Human_rights", domain: "Politics", label: "Human Rights" },
-            { id: "Category:Comparative_politics", domain: "Politics", label: "Comparative Politics" },
-            { id: "Category:Political_campaigning", domain: "Politics", label: "Political Campaigning" },
-            { id: "Category:Geopolitics", domain: "Politics", label: "Geopolitics" },
-            { id: "Category:Psephology", domain: "Politics", label: "Psephology" },
-            { id: "Category:Public_opinion", domain: "Politics", label: "Public Opinion" },
-            { id: "Category:Civil_disobedience", domain: "Politics", label: "Civil Disobedience" },
-
-            // Law
-            { id: "Category:International_law", domain: "Law", label: "International Law" },
-            { id: "Category:Legal_doctrines_and_principles", domain: "Law", label: "Legal Principles" },
-            { id: "Category:Jurisprudence", domain: "Law", label: "Jurisprudence" },
-            { id: "Category:Constitutional_law", domain: "Law", label: "Constitutional Law" },
-            { id: "Category:Criminal_law", domain: "Law", label: "Criminal Law" },
-            { id: "Category:Tort_law", domain: "Law", label: "Tort Law" },
-            { id: "Category:Contract_law", domain: "Law", label: "Contract Law" },
-            { id: "Category:Intellectual_property_law", domain: "Law", label: "IP Law" },
-            { id: "Category:Admiralty_law", domain: "Law", label: "Maritime Law" },
-            { id: "Category:Comparative_law", domain: "Law", label: "Comparative Law" },
-
-            // Economics
-            { id: "Category:Macroeconomics", domain: "Economics", label: "Macroeconomics" },
-            { id: "Category:Behavioral_economics", domain: "Economics", label: "Behavioral Econ" },
-            { id: "Category:Game_theory", domain: "Economics", label: "Game Theory" },
-            { id: "Category:Political_economy", domain: "Economics", label: "Political Economy" },
-            { id: "Category:International_political_economy", domain: "Economics", label: "Int. Pol. Economy" },
-            { id: "Category:Urban_economics", domain: "Economics", label: "Urban Economics" },
-            { id: "Category:Development_economics", domain: "Economics", label: "Development Econ" },
-            { id: "Category:Labor_economics", domain: "Economics", label: "Labor Economics" },
-            { id: "Category:Econometrics", domain: "Economics", label: "Econometrics" },
-            { id: "Category:History_of_economic_thought", domain: "Economics", label: "History of Econ" },
-            { id: "Category:Welfare_economics", domain: "Economics", label: "Welfare Econ" },
-            { id: "Category:Industrial_organization", domain: "Economics", label: "Industrial Org" },
-            { id: "Category:Environmental_economics", domain: "Economics", label: "Env. Economics" },
-            { id: "Category:Economic_history", domain: "Economics", label: "Economic History" },
-            { id: "Category:Economic_geography", domain: "Economics", label: "Economic Geography" },
-
-            // Finance
-            { id: "Category:Financial_markets", domain: "Finance", label: "Financial Markets" },
-            { id: "Category:Economic_bubbles", domain: "Finance", label: "Economic Bubbles" },
-            { id: "Category:Monetary_economics", domain: "Finance", label: "Monetary Theory" },
-            { id: "Category:Investment", domain: "Finance", label: "Investment Theory" },
-            { id: "Category:Corporate_finance", domain: "Finance", label: "Corp. Finance" },
-            { id: "Category:Public_finance", domain: "Finance", label: "Public Finance" },
-            { id: "Category:Financial_risk", domain: "Finance", label: "Risk Management" },
-            { id: "Category:Derivatives_(finance)", domain: "Finance", label: "Derivatives" },
-            { id: "Category:Actuarial_science", domain: "Finance", label: "Actuarial Science" },
-            { id: "Category:Banking", domain: "Finance", label: "Banking" },
-            { id: "Category:Financial_regulation", domain: "Finance", label: "Financial Regulation" },
-            { id: "Category:Behavioral_finance", domain: "Finance", label: "Behavioral Finance" },
-
-            // Mathematics
-            { id: "Category:Number_theory", domain: "Mathematics", label: "Number Theory" },
-            { id: "Category:Topology", domain: "Mathematics", label: "Topology" },
-            { id: "Category:Combinatorics", domain: "Mathematics", label: "Combinatorics" },
-            { id: "Category:Set_theory", domain: "Mathematics", label: "Set Theory" },
-            { id: "Category:Graph_theory", domain: "Mathematics", label: "Graph Theory" },
-            { id: "Category:Linear_algebra", domain: "Mathematics", label: "Linear Algebra" },
-            { id: "Category:Probability_theory", domain: "Mathematics", label: "Probability" },
-            { id: "Category:Mathematical_logic", domain: "Mathematics", label: "Math Logic" }
-        ];
+        
+        // NOTE: CATEGORY_MAP is loaded from category_map.js
+        // Fallback for preview mode only if file missing
+        const MAP_DATA = (typeof window.CATEGORY_MAP !== 'undefined') ? window.CATEGORY_MAP : [];
 
         const EXTERNAL_RESOURCES = {
             "Philosophy": [ { name: "Stanford Encyclopedia (SEP)", url: "https://plato.stanford.edu/search/searcher.py?query=" }, { name: "Internet Encyclopedia (IEP)", url: "https://iep.utm.edu/?s=" } ],
@@ -419,7 +227,7 @@
             groq: { name: "Groq (Llama 3)", url: "https://api.groq.com/openai/v1/chat/completions" }
         };
 
-        const DOMAINS = ["assorted", ...new Set(CATEGORY_MAP.map(c => c.domain))];
+        const DOMAINS = ["assorted", ...new Set(MAP_DATA.map(c => c.domain))];
 
         const UI_THEMES = {
             'sepia': {
@@ -481,21 +289,23 @@
         };
 
         const fetchTopicBatch = async (sectors, seedMode) => {
+            if (!MAP_DATA.length) return []; // Guard if map fails to load
+
             let selectedCats = [];
             
             if (seedMode === 'assorted') {
-                const domains = [...new Set(CATEGORY_MAP.map(c => c.domain))];
+                const domains = [...new Set(MAP_DATA.map(c => c.domain))];
                 const shuffledDomains = domains.sort(() => 0.5 - Math.random()).slice(0, sectors);
                 selectedCats = shuffledDomains.map(dom => {
-                    const inDomain = CATEGORY_MAP.filter(c => c.domain === dom);
+                    const inDomain = MAP_DATA.filter(c => c.domain === dom);
                     return inDomain[Math.floor(Math.random() * inDomain.length)];
                 });
                 while(selectedCats.length < sectors) {
-                    selectedCats.push(CATEGORY_MAP[Math.floor(Math.random() * CATEGORY_MAP.length)]);
+                    selectedCats.push(MAP_DATA[Math.floor(Math.random() * MAP_DATA.length)]);
                 }
             } else {
-                let candidates = CATEGORY_MAP.filter(c => c.domain === seedMode);
-                if (!candidates.length) candidates = CATEGORY_MAP;
+                let candidates = MAP_DATA.filter(c => c.domain === seedMode);
+                if (!candidates.length) candidates = MAP_DATA;
                 const shuffled = candidates.sort(() => 0.5 - Math.random());
                 while(selectedCats.length < sectors) {
                     selectedCats.push(shuffled[selectedCats.length % shuffled.length]);
@@ -800,7 +610,7 @@
                                     ) : (
                                         <div className="flex flex-col gap-2">
                                             {extras?.links.map((link, i) => (
-                                                <button key={i} onClick={() => onNavigate(link)} className={`text-left text-xs font-bold ${theme.text} opacity-80 hover:opacity-100 hover:text-indigo-600 p-3 border ${theme.border} rounded-lg transition-all flex items-center justify-between group/link font-sans bg-transparent hover:bg-black/5`}>
+                                                <button key={i} onClick={() => onNavigate(link, domain)} className={`text-left text-xs font-bold ${theme.text} opacity-80 hover:opacity-100 hover:text-indigo-600 p-3 border ${theme.border} rounded-lg transition-all flex items-center justify-between group/link font-sans bg-transparent hover:bg-black/5`}>
                                                     <span className="truncate pr-2">{link}</span><Icon name="ArrowRight" size={12} className={`opacity-0 group-hover/link:opacity-100 -translate-x-2 group-hover/link:translate-x-0 transition-all ${theme.link}`} />
                                                 </button>
                                             ))}
@@ -926,6 +736,7 @@
             const [showResult, setShowResult] = useState(false);
             const [loading, setLoading] = useState(true);
             const [seedingMode, setSeedingMode] = useState("assorted");
+            const [toast, setToast] = useState(null);
 
             const theme = UI_THEMES[userSettings.theme];
 
@@ -944,6 +755,40 @@
             const loadBatch = useCallback(async (modeOverride) => {
                 if (!ack) return;
                 setLoading(true);
+                
+                // Check URL for session hash first
+                const urlParams = new URLSearchParams(window.location.search);
+                const sessionHash = urlParams.get('s');
+                
+                if (sessionHash) {
+                    const restoredMinimal = deserializeSession(sessionHash);
+                    if (restoredMinimal && restoredMinimal.length) {
+                         // Rehydrate full data from minimal
+                         try {
+                            const titlesParam = restoredMinimal.map(t => t.t).join('|');
+                            const detailsData = await fetchWiki({ 
+                                action: 'query', titles: titlesParam, 
+                                prop: 'extracts|info', inprop: 'length|touched', exintro: true, explaintext: true 
+                            });
+                            const pages = detailsData?.query?.pages || {};
+                            
+                            const reconstructed = restoredMinimal.map(min => {
+                                const page = Object.values(pages).find(p => p.title === min.t);
+                                if (!page) return null;
+                                return { ...page, category: { id: min.c, domain: min.d, label: min.l } };
+                            }).filter(x => x);
+                            
+                            if (reconstructed.length > 0) {
+                                setActiveTopics(reconstructed);
+                                setLoading(false);
+                                setRotation(0);
+                                return; // EXIT EARLY
+                            }
+                         } catch(e) { console.error("Rehydration failed", e); }
+                    }
+                }
+
+                // Standard Loading (Random)
                 const targetMode = modeOverride || seedingMode;
                 try {
                     const topics = await fetchTopicBatch(userSettings.sectors, targetMode);
@@ -954,6 +799,14 @@
             }, [seedingMode, userSettings.sectors, ack]);
 
             useEffect(() => { loadBatch(); }, [loadBatch]);
+
+            const handleShare = () => {
+                const hash = serializeSession(activeTopics);
+                const url = `${window.location.origin}${window.location.pathname}?s=${hash}`;
+                navigator.clipboard.writeText(url);
+                setToast("Session URL copied to clipboard");
+                setTimeout(() => setToast(null), 3000);
+            };
 
             const handleSpin = () => {
                 if (isSpinning || !activeTopics.length) return;
@@ -971,7 +824,7 @@
                 }, 4000);
             };
 
-            const handleNavigate = async (title) => {
+            const handleNavigate = async (title, parentDomain) => {
                 setView('loading_direct');
                 // Use efficient single fetch
                 const d = await fetchWiki({ 
@@ -982,12 +835,30 @@
                 
                 if (p && !p.missing) {
                     // Smart domain inference since cross-links often lack explicit domain tags
-                    const inferred = inferDomain(p.categories);
+                    let inferred = inferDomain(p.categories);
+                    
+                    // IMPROVED LOGIC: If inference returns "General" but we came from a specific domain, inherit it.
+                    if (inferred === "General" && parentDomain) {
+                        inferred = parentDomain;
+                    }
+                    
                     const newTopic = { ...p, category: { domain: inferred } }; 
                     setSelectedTopic(newTopic);
                     setView('dashboard');
                 } else {
                     setView('dashboard'); // Fallback
+                }
+            };
+
+            const handleUrlInput = (url) => {
+                if (!url) return;
+                try {
+                    // Handle full URLs like https://en.wikipedia.org/wiki/Philosophy or just titles
+                    const match = url.match(/\/wiki\/([^#?]+)/) || url.match(/title=([^&]+)/);
+                    const title = match ? decodeURIComponent(match[1]).replace(/_/g, ' ') : url;
+                    handleNavigate(title, null); // Direct entry has no parent domain
+                } catch(e) {
+                    console.error("Invalid URL", e);
                 }
             };
 
@@ -1008,6 +879,11 @@
             return (
                 <div className={`min-h-screen ${theme.font} ${theme.text} transition-colors duration-500`}>
                     {!ack && <DisclaimerModal onAccept={() => setAck(true)} theme={theme} />}
+                    {toast && (
+                        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 bg-black text-white px-6 py-3 rounded-full shadow-xl animate-fade-in text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                            <Icon name="CheckCircle" size={14} className="text-green-400" /> {toast}
+                        </div>
+                    )}
                     <nav className={`border-b ${theme.border} px-6 py-4 flex items-center justify-between sticky top-0 z-40 backdrop-blur-sm ${userSettings.theme === 'dark' ? 'bg-black/20' : 'bg-white/10'}`}>
                         <div className="flex items-center gap-3">
                             <Icon name="BookOpen" size={20} className={theme.text} />
@@ -1043,7 +919,7 @@
 
                         {view === 'spinner' && (
                             <div className="w-full max-w-4xl mx-auto flex flex-col items-center animate-in fade-in duration-1000">
-                                <div className="mb-12 relative group">
+                                <div className="mb-12 relative group flex flex-col items-center gap-4">
                                     <div className={`flex items-center gap-3 ${theme.panel} border ${theme.border} rounded-full px-6 py-2 shadow-sm hover:shadow-md transition-shadow`}>
                                         <Icon name="Filter" size={14} className={theme.accent} />
                                         <span className={`text-[10px] uppercase tracking-widest font-bold ${theme.accent}`}>Curatorial Strategy:</span>
@@ -1052,11 +928,23 @@
                                         </select>
                                         <Icon name="ChevronLeft" size={10} className={`${theme.accent} -rotate-90 absolute right-6 pointer-events-none`} />
                                     </div>
+                                    
+                                    {/* Session Hash Share Button */}
+                                    <button 
+                                        onClick={handleShare}
+                                        disabled={loading || !activeTopics.length}
+                                        className={`flex items-center gap-2 text-[10px] uppercase tracking-widest font-bold ${theme.accent} hover:text-indigo-600 transition-colors opacity-60 hover:opacity-100`}
+                                    >
+                                        <Icon name="Share" size={12} /> Share Session Hash
+                                    </button>
                                 </div>
 
                                 <div className="relative w-80 h-80 md:w-[450px] md:h-[450px] mb-16">
                                    {loading || !activeTopics.length ? (
-                                     <div className="absolute inset-0 flex items-center justify-center"><Icon name="Loader2" size={48} className={`animate-spin ${theme.accent}`} /></div>
+                                     <div className="absolute inset-0 flex items-center justify-center flex-col gap-4">
+                                         <Icon name="Loader2" size={48} className={`animate-spin ${theme.accent}`} />
+                                         {!MAP_DATA.length && <p className={`text-xs ${theme.accent}`}>Loading Archives...</p>}
+                                     </div>
                                    ) : (
                                      <>
                                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center">
@@ -1087,9 +975,34 @@
                                    )}
                                 </div>
 
-                                <button onClick={handleSpin} disabled={isSpinning || loading || !activeTopics.length} className={`px-12 py-4 border ${theme.border} text-xs uppercase tracking-[0.25em] font-bold transition-all ${theme.panel} ${theme.text} hover:opacity-80 rounded shadow-sm hover:shadow-xl ${isSpinning ? 'opacity-50' : ''}`}>
-                                  {isSpinning ? 'Consulting Index...' : 'Query The Index'}
-                                </button>
+                                <div className="flex flex-col items-center w-full max-w-lg gap-8">
+                                    <button onClick={handleSpin} disabled={isSpinning || loading || !activeTopics.length} className={`w-full px-12 py-4 border ${theme.border} text-xs uppercase tracking-[0.25em] font-bold transition-all ${theme.panel} ${theme.text} hover:opacity-80 rounded shadow-sm hover:shadow-xl ${isSpinning ? 'opacity-50' : ''}`}>
+                                      {isSpinning ? 'Consulting Index...' : 'Query The Index'}
+                                    </button>
+
+                                    {/* Direct Access Module */}
+                                    <div className={`w-full p-1 rounded-xl ${theme.border} border bg-opacity-50 flex flex-col items-center transition-all animate-fade-in hover:shadow-md`}>
+                                        <div className={`w-full ${theme.panel} rounded-lg p-3 flex items-center gap-3`}>
+                                            <div className="p-2 bg-black/5 rounded text-indigo-500">
+                                                <Icon name="Link" size={14} />
+                                            </div>
+                                            <div className="flex-1">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Paste direct Wikipedia URL or Topic Title..." 
+                                                    className={`w-full bg-transparent text-sm font-bold ${theme.text} outline-none placeholder:opacity-40 placeholder:font-normal font-sans`}
+                                                    onKeyDown={(e) => e.key === 'Enter' && handleUrlInput(e.target.value)}
+                                                />
+                                            </div>
+                                            <button 
+                                                onClick={(e) => handleUrlInput(e.target.previousSibling.querySelector('input').value)} 
+                                                className={`px-3 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider ${theme.text} hover:bg-black/5 transition-colors border border-transparent hover:${theme.border}`}
+                                            >
+                                                Load Dossier
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
                         
@@ -1131,5 +1044,4 @@
         root.render(<App />);
     </script>
 </body>
-
 </html>
