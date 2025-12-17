@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Hub | TRACKS @ PWC</title>
+    
+    <!-- Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- External Styles -->
+    <link rel="stylesheet" href="src/hub_style.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        pwc: {
+                            bg: 'var(--bg-primary)',
+                            surface: 'var(--bg-secondary)',
+                            text: 'var(--text-primary)',
+                            subtext: 'var(--text-secondary)',
+                            border: 'var(--border-color)',
+                            accent: 'var(--accent-color)',
+                            hover: 'var(--hover-bg)',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- React -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- DATA MODULES -->
+    <script src="dat/hub_curriculum.js"></script>
+    <script src="dat/hub_activities.js"></script>
+    <script src="dat/hub_resources.js"></script>
+    <script src="dat/hub_skills.js"></script>
+
+</head>
+<body class="bg-pwc-bg text-pwc-text min-h-screen flex flex-col selection:bg-pwc-accent selection:text-pwc-surface transition-colors duration-300">
+    
+    <!-- Shared Theme Script -->
+    <script src="src/theme_manager.js"></script>
+
+    <div id="root" class="flex flex-col h-screen"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const CURRICULUM = window.HUB_DATA?.CURRICULUM || [];
+        const THINGS_TO_DO = window.HUB_DATA?.THINGS_TO_DO || [];
+        const RESOURCE_CATEGORIES = window.HUB_DATA?.RESOURCE_CATEGORIES || [];
+        const RESOURCES = window.HUB_DATA?.RESOURCES || {};
+        const SKILL_LEVELS = window.HUB_DATA?.SKILL_LEVELS || [];
+
+        const Navigation = ({ activeTab, setTab }) => (
+            <nav className="sticky top-0 z-50 bg-pwc-bg/95 backdrop-blur border-b border-pwc-border transition-colors duration-300">
+                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-8">
+                        <a href="index.html" className="font-serif font-bold text-lg tracking-tight text-pwc-accent no-underline hover:opacity-80">
+                            TRACKS in Research
+                        </a>
+                        <div className="hidden md:flex gap-1">
+                            {['Curriculum', 'Resources', 'Skills', 'Activities'].map((t) => (
+                                <button 
+                                    key={t}
+                                    onClick={() => setTab(t.toLowerCase())}
+                                    className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors rounded-md ${activeTab === t.toLowerCase() ? 'bg-pwc-accent text-pwc-surface' : 'text-pwc-subtext hover:text-pwc-accent hover:bg-pwc-hover'}`}
+                                >
+                                    {t}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-6">
+                        <a href="index.html" className="text-xs font-bold uppercase tracking-widest text-pwc-subtext hover:text-pwc-accent transition-colors no-underline">
+                            <i className="fa-solid fa-house mr-2"></i> Home
+                        </a>
+                        <div className="flex gap-1 bg-pwc-border/20 p-1 rounded-lg border border-pwc-border">
+                            <button className="theme-btn p-2 rounded-md text-xs transition-all" data-theme="light" title="Light"><i class="fa-solid fa-sun"></i></button>
+                            <button className="theme-btn p-2 rounded-md text-xs transition-all" data-theme="dark" title="Dark"><i class="fa-solid fa-moon"></i></button>
+                            <button className="theme-btn p-2 rounded-md text-xs transition-all" data-theme="sepia" title="Sepia"><i class="fa-solid fa-book-open"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        );
+
+        const CurriculumView = () => {
+            const [activeModuleIndex, setActiveModuleIndex] = useState(0);
+            const [activeProtocol, setActiveProtocol] = useState(0);
+            
+            if (!CURRICULUM || CURRICULUM.length === 0) return <div className="p-12 text-center text-pwc-subtext">Loading Curriculum Data...</div>;
+
+            const module = CURRICULUM[activeModuleIndex];
+            const currentProtocol = module.protocols ? module.protocols[activeProtocol] : null;
+
+            return (
+                <div className="flex flex-col lg:flex-row h-full overflow-hidden">
+                    <div className="lg:w-64 bg-pwc-surface border-r border-pwc-border overflow-y-auto hidden lg:block p-6 flex-shrink-0 transition-colors duration-300">
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-6">Modules</h3>
+                        <nav className="space-y-2">
+                            {CURRICULUM.map((m, i) => (
+                                <button key={i} onClick={() => { setActiveModuleIndex(i); setActiveProtocol(0); }} className={`w-full text-left px-3 py-2 text-sm font-medium rounded-md transition-colors leading-tight ${activeModuleIndex === i ? 'bg-pwc-accent text-pwc-surface shadow-md' : 'text-pwc-text hover:bg-pwc-hover hover:text-pwc-accent'}`}>
+                                    {m.title}
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
+                    
+                    <div className="flex-1 overflow-y-auto bg-pwc-bg p-8 lg:p-16 transition-colors duration-300">
+                        <div className="max-w-4xl mx-auto animate-fade-in">
+                            <div className="mb-10 pb-8 border-b border-pwc-border">
+                                <span className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-2 block">{module.title}</span>
+                                <h2 className="text-4xl font-serif font-bold text-pwc-accent mb-4">{module.subtitle}</h2>
+                                <p className="text-lg text-pwc-text leading-relaxed font-serif italic mb-8 border-l-2 border-pwc-border pl-4">{module.intro}</p>
+                                
+                                {module.readings && (
+                                <div className="bg-pwc-surface p-6 rounded-lg shadow-sm border border-pwc-border">
+                                    <h4 className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-4 border-b border-pwc-border pb-2">Key References</h4>
+                                    <ul className="text-sm space-y-3">
+                                        {module.readings.map((reading, i) => (
+                                            <li key={i} className="text-pwc-text flex gap-2">
+                                                <i className="fa-solid fa-book text-pwc-subtext mt-1"></i>
+                                                <span>
+                                                    <span className="font-bold">{reading.title}</span> 
+                                                    <span className="text-pwc-subtext"> ({reading.author})</span>
+                                                    <span className="text-pwc-subtext block text-xs mt-0.5">{reading.note}</span>
+                                                </span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                                )}
+                            </div>
+
+                            {module.protocols && (
+                                <>
+                                    <div className="flex overflow-x-auto gap-2 mb-8 pb-2">
+                                        {module.protocols.map((p, i) => (
+                                            <button key={i} onClick={() => setActiveProtocol(i)} className={`flex-shrink-0 px-4 py-2 text-xs font-bold rounded-full border transition-all ${activeProtocol === i ? 'bg-pwc-accent text-pwc-surface border-pwc-accent shadow-md' : 'bg-pwc-surface text-pwc-text border-pwc-border hover:border-pwc-subtext'}`}>
+                                                {p.title}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {currentProtocol && (
+                                        <div className="bg-pwc-surface rounded-xl shadow-sm border border-pwc-border overflow-hidden animate-fade-in">
+                                            <div className="p-8 lg:p-10">
+                                                <div className="flex justify-between items-start mb-6">
+                                                    <div>
+                                                        <h4 className="text-2xl font-serif font-bold text-pwc-accent mb-2">{currentProtocol.title}</h4>
+                                                        <p className="text-sm text-pwc-subtext">{currentProtocol.desc}</p>
+                                                    </div>
+                                                    {currentProtocol.deliverable && <div className="text-right">
+                                                        <span className="block text-[10px] font-bold uppercase text-pwc-subtext mb-1">Output</span>
+                                                        <span className="text-xs font-bold bg-pwc-bg px-3 py-1.5 rounded border border-pwc-border text-pwc-text">{currentProtocol.deliverable}</span>
+                                                    </div>}
+                                                </div>
+
+                                                {currentProtocol.context && (
+                                                    <div className="mb-8 p-6 bg-pwc-bg border-l-4 border-pwc-border rounded-r">
+                                                        <span className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-2 block">Theoretical Context</span>
+                                                        <p className="text-sm text-pwc-text leading-relaxed">{currentProtocol.context}</p>
+                                                    </div>
+                                                )}
+                                                
+                                                <div className="space-y-8 relative">
+                                                    <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-pwc-bg"></div>
+                                                    {currentProtocol.steps && currentProtocol.steps.map((step, i) => (
+                                                        <div key={i} className="flex gap-6 relative">
+                                                            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-pwc-surface border-2 border-pwc-accent text-pwc-accent flex items-center justify-center text-xs font-bold z-10">{i+1}</div>
+                                                            <div className="pt-0.5 w-full">
+                                                                <span className="text-sm font-bold text-pwc-accent block mb-1">{step.label}</span>
+                                                                <p className="text-sm text-pwc-subtext mb-3 leading-relaxed">{step.text}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ResourcesView = () => {
+            const [activeCategory, setActiveCategory] = useState(0);
+
+            if (!RESOURCE_CATEGORIES.length) return <div className="p-12 text-center text-pwc-subtext">Loading Resources...</div>;
+
+            const categoryId = RESOURCE_CATEGORIES[activeCategory].id;
+            const currentResources = RESOURCES[categoryId] || [];
+
+            return (
+                <div className="flex-1 overflow-y-auto bg-pwc-bg p-8 lg:p-12 transition-colors duration-300">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex flex-col lg:flex-row gap-8 items-start">
+                            <div className="lg:w-56 flex-shrink-0 sticky top-4">
+                                {RESOURCE_CATEGORIES.map((cat, i) => (
+                                    <button key={i} onClick={() => setActiveCategory(i)} className={`w-full text-left px-4 py-2 text-xs font-bold uppercase tracking-wider rounded border-l-2 transition-all mb-1 ${activeCategory === i ? 'bg-pwc-surface border-pwc-accent text-pwc-accent shadow-sm' : 'border-transparent text-pwc-subtext hover:bg-pwc-surface hover:text-pwc-text'}`}>
+                                        {cat.name}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="flex-1 w-full">
+                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
+                                    {currentResources.map((res, j) => (
+                                        <a key={j} href={res.url} target="_blank" rel="noopener noreferrer" className="bg-pwc-surface p-5 rounded border border-pwc-border hover:border-pwc-accent transition-colors group block h-full shadow-sm no-underline">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <h3 className="font-bold text-pwc-accent text-sm group-hover:underline">{res.title}</h3>
+                                                <i className="fa-solid fa-arrow-up-right-from-square text-pwc-border text-xs group-hover:text-pwc-accent"></i>
+                                            </div>
+                                            <p className="text-xs text-pwc-subtext leading-relaxed">{res.desc}</p>
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const SkillsView = () => {
+            const [level, setLevel] = useState(0);
+            
+            if (!SKILL_LEVELS.length) return <div className="p-12 text-center text-pwc-subtext">Loading Skills Data...</div>;
+
+            return (
+                <div className="flex-1 overflow-y-auto bg-pwc-bg p-8 lg:p-12 transition-colors duration-300">
+                    <div className="max-w-5xl mx-auto">
+                        <div className="flex gap-6 mb-8 border-b border-pwc-border overflow-x-auto pb-1">
+                            {SKILL_LEVELS.map((lvl, i) => (
+                                <button key={i} onClick={() => setLevel(i)} className={`pb-3 text-sm font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${level === i ? 'border-b-2 border-pwc-accent text-pwc-accent' : 'text-pwc-subtext hover:text-pwc-text'}`}>
+                                    {lvl.level}
+                                </button>
+                            ))}
+                        </div>
+                        
+                        <div className="animate-fade-in grid gap-4">
+                            {SKILL_LEVELS[level].projects.map((project, i) => (
+                                <div key={i} className="bg-pwc-surface p-6 rounded border border-pwc-border shadow-sm flex flex-col md:flex-row gap-6 items-center">
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <span className="text-[10px] font-bold uppercase text-pwc-subtext tracking-wider">{project.domain}</span>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-pwc-accent mb-1">{project.title}</h3>
+                                        <p className="text-xs text-pwc-text italic mb-3 font-serif">Focus: {project.purpose}</p>
+                                        
+                                        <div className="flex flex-wrap gap-2">
+                                            {project.steps.map((step, s) => (
+                                                <span key={s} className="text-xs bg-pwc-bg border border-pwc-border px-2 py-1 rounded text-pwc-subtext">{step}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex-shrink-0">
+                                        {project.link && (
+                                            <a href={project.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-pwc-bg text-pwc-accent hover:bg-pwc-accent hover:text-pwc-surface transition-colors border border-pwc-border no-underline">
+                                                <i className="fa-solid fa-arrow-right text-xs"></i>
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ActivitiesView = () => {
+            if (!THINGS_TO_DO.length) return <div className="p-12 text-center text-pwc-subtext">Loading Activities...</div>;
+
+            return (
+                <div className="flex-1 overflow-y-auto bg-pwc-bg p-8 lg:p-12 transition-colors duration-300">
+                    <div className="max-w-6xl mx-auto">
+                        <div className="space-y-12 animate-fade-in">
+                            {THINGS_TO_DO.map((section, idx) => (
+                                <div key={idx}>
+                                    <h3 className="text-sm font-bold uppercase tracking-widest text-pwc-subtext mb-6 border-b border-pwc-border pb-2">{section.category}</h3>
+                                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {section.items.map((item, i) => (
+                                            <div key={i} className="bg-pwc-surface p-6 rounded-lg border border-pwc-border shadow-sm flex flex-col h-full hover:border-pwc-accent transition-colors group relative">
+                                                <div className="mb-4">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <span className="text-[10px] font-bold uppercase bg-pwc-bg text-pwc-subtext px-2 py-1 rounded tracking-wider border border-pwc-border">{item.type}</span>
+                                                    </div>
+                                                    <h4 className="text-xl font-bold text-pwc-accent mb-1">{item.title}</h4>
+                                                    {item.org && <p className="text-xs text-pwc-subtext font-medium mb-3">{item.org}</p>}
+                                                    <p className="text-sm text-pwc-text leading-relaxed mb-4">{item.desc}</p>
+                                                    
+                                                    {item.aims && (
+                                                        <div className="mb-3">
+                                                            <span className="text-xs font-bold text-pwc-subtext block mb-1">Aims</span>
+                                                            <p className="text-xs text-pwc-text leading-relaxed">{item.aims}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                
+                                                {item.link && (
+                                                    <div className="mt-auto pt-4 border-t border-pwc-border">
+                                                        <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-pwc-accent hover:underline flex items-center gap-1 no-underline">
+                                                            Visit Resource <i className="fa-solid fa-arrow-right"></i>
+                                                        </a>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [tab, setTab] = useState('curriculum');
+
+            // Re-bind click events for React rendered buttons to ensure they update the global theme state
+            useEffect(() => {
+                const buttons = document.querySelectorAll('.theme-btn');
+                buttons.forEach(btn => {
+                    btn.onclick = () => window.setGlobalTheme(btn.dataset.theme);
+                });
+            });
+
+            return (
+                <div className="flex flex-col h-screen">
+                    <Navigation activeTab={tab} setTab={setTab} />
+                    <main className="flex-grow flex flex-col overflow-hidden">
+                        {tab === 'curriculum' && <CurriculumView />}
+                        {tab === 'resources' && <ResourcesView />}
+                        {tab === 'skills' && <SkillsView />}
+                        {tab === 'activities' && <ActivitiesView />}
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

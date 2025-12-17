@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organization | TRACKS @ PWC</title>
+    
+    <!-- Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- External Styles -->
+    <link rel="stylesheet" href="src/hub_style.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        pwc: {
+                            bg: 'var(--bg-primary)',
+                            surface: 'var(--bg-secondary)',
+                            text: 'var(--text-primary)',
+                            subtext: 'var(--text-secondary)',
+                            border: 'var(--border-color)',
+                            accent: 'var(--accent-color)',
+                            hover: 'var(--hover-bg)',
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.8s ease-out',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- React -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- DATA MODULES -->
+    <script src="dat/hub_organization.js"></script>
+
+</head>
+<body class="bg-pwc-bg text-pwc-text min-h-screen selection:bg-pwc-accent selection:text-pwc-surface transition-colors duration-300">
+
+    <!-- Theme Script -->
+    <script src="src/theme_manager.js"></script>
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-pwc-bg/95 backdrop-blur border-b border-pwc-border transition-colors duration-300">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <a href="index.html" class="font-serif font-bold text-lg tracking-tight text-pwc-accent no-underline hover:opacity-80 transition-opacity">
+                    TRACKS @ PWC
+                </a>
+                <a href="index.html" class="text-xs font-bold uppercase tracking-widest text-pwc-subtext hover:text-pwc-accent transition-colors no-underline border-l border-pwc-border pl-6">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> Return
+                </a>
+            </div>
+            
+            <!-- Theme Controls -->
+            <div class="flex gap-1 bg-pwc-border/20 p-1 rounded-lg border border-pwc-border">
+                <button class="theme-btn p-2 rounded-md text-xs transition-all" data-theme="light" title="Light"><i class="fa-solid fa-sun"></i></button>
+                <button class="theme-btn p-2 rounded-md text-xs transition-all" data-theme="dark" title="Dark"><i class="fa-solid fa-moon"></i></button>
+                <button class="theme-btn p-2 rounded-md text-xs transition-all" data-theme="sepia" title="Sepia"><i class="fa-solid fa-book-open"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const ORGANIZATION = window.HUB_DATA?.ORGANIZATION || {};
+
+        const OrganizationView = () => {
+            if (!ORGANIZATION.overview) return <div className="p-12 text-center text-pwc-subtext">Loading Organization Data...</div>;
+
+            return (
+                <main className="max-w-5xl mx-auto px-6 py-16 animate-fade-in">
+
+                    {/* Vision Header */}
+                    <div className="mb-20">
+                        <h1 className="text-4xl md:text-5xl font-serif font-bold text-pwc-accent mb-6 leading-tight">
+                            {ORGANIZATION.overview.mission}
+                        </h1>
+                        <p className="text-lg text-pwc-text leading-relaxed font-serif italic opacity-80 max-w-4xl border-l-2 border-pwc-border pl-6">
+                            {ORGANIZATION.overview.vision}
+                        </p>
+                        </div>
+
+                    {/* Structural Distinction */}
+                    <div className="mb-24 grid md:grid-cols-2 gap-12 pt-12 border-t border-pwc-border">
+                        <div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-pwc-subtext mb-3 block">{ORGANIZATION.distinction.tracks.role}</span>
+                            <h3 className="text-xl font-bold text-pwc-accent mb-4">{ORGANIZATION.distinction.tracks.title}</h3>
+                            <p className="text-sm text-pwc-text leading-relaxed opacity-90">
+                                {ORGANIZATION.distinction.tracks.text}
+                            </p>
+                        </div>
+                        <div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-pwc-subtext mb-3 block">{ORGANIZATION.distinction.research.role}</span>
+                            <h3 className="text-xl font-bold text-pwc-accent mb-4">{ORGANIZATION.distinction.research.title}</h3>
+                            <p className="text-sm text-pwc-text leading-relaxed opacity-90">
+                                {ORGANIZATION.distinction.research.text}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Functional Pillars */}
+                    <div className="mb-24">
+                        <h3 className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-8 pb-2 border-b border-pwc-border">Functional Pillars</h3>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
+                            {ORGANIZATION.functions.map((fn, i) => (
+                                <div key={i} className="group">
+                                    <div className="mb-3 text-pwc-subtext text-lg opacity-50 group-hover:opacity-100 transition-opacity">
+                                        <i className={`fa-solid ${fn.icon}`}></i>
+                                    </div>
+                                    <h4 className="text-sm font-bold text-pwc-accent mb-1">{fn.title}</h4>
+                                    <p className="text-xs text-pwc-text leading-relaxed opacity-80">{fn.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Strategic Horizon & Philosophy */}
+                    <div className="grid lg:grid-cols-12 gap-16 pb-12">
+                        <div className="lg:col-span-5">
+                            <div className="sticky top-24">
+                                <h3 className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-6">Operational Philosophy</h3>
+                                <h4 className="text-xl font-serif font-bold text-pwc-accent mb-4">{ORGANIZATION.philosophy.subtitle}</h4>
+                                <p className="text-sm text-pwc-text leading-relaxed opacity-90">
+                                    {ORGANIZATION.philosophy.text}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div className="lg:col-span-7">
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-8 border-b border-pwc-border pb-2">Strategic Horizon</h3>
+                            <div className="space-y-10">
+                                {ORGANIZATION.roadmap.map((phase, i) => (
+                                    <div key={i} className="relative pl-8 border-l border-pwc-border">
+                                        <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-pwc-surface border border-pwc-subtext"></div>
+                                        <span className="text-[10px] uppercase font-bold text-pwc-subtext tracking-wider mb-1 block">{phase.year}</span>
+                                        <h4 className="text-lg font-bold text-pwc-accent mb-2">{phase.title}</h4>
+                                        <p className="text-sm text-pwc-text leading-relaxed opacity-80">{phase.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                </main>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<OrganizationView />);
+
+        // Re-bind theme buttons
+        window.addEventListener('load', () => {
+             const buttons = document.querySelectorAll('.theme-btn');
+             buttons.forEach(btn => {
+                btn.onclick = () => window.setGlobalTheme(btn.dataset.theme);
+             });
+        });
+    </script>
+</body>
+</html>
