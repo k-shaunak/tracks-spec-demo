@@ -1,126 +1,94 @@
-# TRACKS @ PWC — Research Hub
+# TRACKS @ PWC — Web Interface Demonstrator
 
-This repository contains static, client-side HTML prototypes for two experimental, research-oriented web interfaces developed under the broader **TRACKS @ PWC** conceptual framework. These artifacts are intended as exploratory design prototypes rather than production systems or authoritative specifications.
+These artifacts serve as exploratory design prototypes for a "Zero-Build" web ecosystem, comprising a central landing hub, an organizational governance viewer, a research curriculum interface, and a knowledge discovery engine.
 
 ---
 
 ## Important Disclosure
 
-All code in this repository has been produced with the assistance of generative AI. The overall structure, styling, component logic, and textual scaffolding were generated, refined, and assembled using large language models.
+**AI-Assisted Development**: All scripts in this repository were generated using generative AI. The content represents a conceptual demonstration rather than an authoritative institutional specification.
 
 ---
 
-## Repository Overview
+## Ecosystem Overview
 
-### 1. `index.html` — TRACKS @ PWC Research Hub
+The repository consists of four distinct interfaces that function as a cohesive application suite:
 
-A comprehensive, self-contained research hub interface designed to function as:
+### 1. `index.html` — The Landing Hub
+*The Central Gateway.*
+A minimalist navigation deck that routes users to the three primary modules. It features:
+- **Theme Persistence:** Toggles between Light, Dark (Obsidian), and Sepia modes, saving the preference to `localStorage` for use across all sub-pages.
+- **Three-Column Navigation:** Direct access to Organization, Research, and the Archivist.
 
-- A curriculum and methodology navigator  
-  (Epistemic Foundations, Causal Inference, Qualitative Rigor)
-- A resource aggregation platform  
-  (data sources, simulations, competitions)
-- A research training and incubation scaffold
+### 2. `organization.html` — Institutional Governance
+*The Strategic Architecture.*
+A visual manifesto of the TRACKS framework, focusing on governance and long-term strategy.
+- **Functional Pillars:** Visualizes the five core functions (Inquiry, Capacity, Discourse, Memory, Alignment).
+- **Strategic Roadmap:** An interactive vertical timeline detailing Phases I through IV (Foundation to Institutional Integration).
+- **Operational Philosophy:** Articulates the "Evolutionary Governance" model.
 
-**Key Characteristics**
+### 3. `research.html` — The Research Lab
+*The Systems Demonstrator.*
+A comprehensive dashboard for academic inquiry, divided into four interactive tabs:
+- **Curriculum:** A protocol-driven navigator for Epistemic Foundations, Causal Inference (DiD, IV), and Qualitative Rigor. Includes interactive "steps" for research protocols like *The Theoretical Puzzle*.
+- **Resources:** A curated, categorized bank of external datasets (FRED, World Bank, V-Dem) and tools.
+- **Skills:** A tiered skill tree (Foundations, Core, Advanced) covering Math, Python, R, and Econometrics.
+- **Activities:** A collection of metacognitive drills (Pre-Mortem, Zero-Draft) and simulation links (Fishbanks, OPEQ).
 
-- **Zero-Build Architecture**  
-  React and Tailwind CSS are loaded via CDN, with JSX transpiled directly in the browser.
-
-- **Thematic Customization**  
-  Native support for Light, Dark, and Sepia reading modes.
-
-- **Protocol-Driven Design**  
-  Structured research guides, including:
-  - The Theoretical Puzzle  
-  - Identification Strategy  
-  - Analytic Induction
-
-- **Persistent State**  
-  Active modules, protocols, and resource categories are preserved across page reloads using `localStorage`.
-
----
-
-### 2. `archivist.html` — *The Archivist: Serendipity Engine*
-
-An exploratory knowledge discovery interface designed to support serendipitous navigation across human knowledge domains, augmented by optional generative inference.
-
-**Key Features**
-
-- **Modular Architecture**  
-  Strict separation of logic, data, and presentation layers.
-
-- **Session Serialization (“The Hash”)**  
-  The application serializes the current set of loaded topics into a URL-safe hash (`?s=...`), allowing users to share an identical serendipity state.
-
-- **Deep Linking**  
-  Individual topics can be opened directly via URL parameters (`?t=Topic_Name`), triggering the “File Retrieved” modal while ensuring the background spinner is fully initialized for continued exploration.
-
-- **Universal Library Access**  
-  A dossier sidebar provides collapsible access to all curated external repositories (e.g., JSTOR, PhilPapers, NBER), independent of the currently loaded topic.
-
-- **Scholar’s Lens (AI Augmentation)**  
-  An optional mode allowing users to provide API keys (Google Gemini or Groq) to generate real-time intellectual synthesis and surface core academic debates related to selected topics.
-
-- **Performance-Oriented Design**  
-  - Persistent local caching of Wikipedia data  
-  - Static background textures to minimize CPU usage  
-  - Debounced interaction logic to reduce unnecessary reflows  
+### 4. `archivist.html` — The Archivist
+*The Serendipity Engine.*
+An exploratory interface designed to generate lateral thinking by connecting disparate knowledge domains.
+- **The Spinner:** A visual "wheel" that randomizes topics based on selected domains (Philosophy, Science, History, etc.).
+- **Scholar's Lens (AI Augmented):** An optional mode allowing users to input API keys (Google Gemini or Groq/Llama3) to generate real-time intellectual syntheses and "Key Debates" summaries.
+- **The Dossier:** Displays Wikipedia extracts, book recommendations (via Google Books API), and cross-references.
+- **Universal Library:** A sidebar providing quick search access to external repositories (JSTOR, PhilPapers, NBER, etc.).
+- **Session Hashing:** The specific state of the wheel can be serialized into the URL for sharing.
 
 ---
 
-## Architecture and File Structure
+## Technical Architecture
 
-This project follows a **Zero-Build Modular Architecture**. All interfaces run directly in a modern web browser (including via the `file://` protocol) without a local server, while maintaining a clean separation of concerns.
+This project follows a **Zero-Build Modular Architecture**. All interfaces run directly in a modern web browser (including via the `file://` protocol) without a local server or compilation step.
 
-### Root
+### Core Stack
+- **React (via CDN):** Component logic.
+- **Tailwind CSS (via CDN):** Utility-first styling.
+- **Babel (via CDN):** In-browser JSX transpilation.
+- **FontAwesome:** Iconography.
 
-- `index.html` — Entry point for the Research Hub  
-- `archivist.html` — Entry point for the Serendipity Engine  
+### File Structure
 
-### `/dat` — Data Ontologies
+#### `/dat` — Data Ontologies
+Content is strictly separated from logic. Editing these files updates the content without touching the React code.
+- `hub_organization.js`: Vision, roadmap, and pillars for `organization.html`.
+- `hub_curriculum.js`: Research protocols and reading lists for `research.html`.
+- `hub_skills.js`: Technical skill trees and project links.
+- `hub_resources.js`: Categorized external data links.
+- `hub_activities.js`: Simulations, drills, and competitions.
+- `category_map.js`: The taxonomy of domains (Philosophy, Physics, Art) used by the Archivist.
+- `library_map.js`: The list of external search engines used in the Archivist sidebar.
 
-These files define the underlying content and domain structure. They can be edited to change subject matter without modifying application logic.
-
-- `hub_curriculum.js` — Research protocols and epistemic foundations  
-- `hub_resources.js` — External datasets and repositories (FRED, World Bank, etc.)  
-- `hub_skills.js` — Technical tutorials (R, Python, LaTeX)  
-- `hub_activities.js` — Simulations and competitions  
-- `category_map.js` — The Archivist’s domain ontology (Philosophy, Science, etc.)  
-- `library_map.js` — Curated external archives and libraries  
-
-### `/src` — Source and UI Assets
-
-- `hub_style.css` — Styles specific to the Research Hub  
-- `archivist_style.css` — Styles specific to the Archivist (grain textures, scrollbars)  
-- `theme_map.js` — UI theme definitions (Sepia, Obsidian, Light)  
-
----
-
-## Usage
-
-No installation or build steps are required.
-
-1. Download or clone the entire repository.
-2. Open `index.html` in any modern web browser  
-3. Navigate to the **Lab** tab or open `archivist.html` directly to access the Serendipity Engine.
-
-### Persistence Notes
-
-The application uses `localStorage` to preserve:
-
-- Theme preferences  
-- Active tabs and modules  
-- Cached API responses (where applicable)
-
-To fully reset the application state, clear your browser’s local storage for the corresponding file or site context.
+#### `/src` — Logic & Assets
+- `theme_manager.js`: Handles applying CSS classes (`theme-sepia`, `theme-dark`) and persisting state to `localStorage`.
+- `theme_map.js`: Defines the specific color palettes and Tailwind classes for the Archivist's themes.
+- `hub_style.css`: Styles specific to the Hub, Organization, and Research pages.
+- `archivist_style.css`: Styles specific to the Archivist (grain textures, customized scrollbars).
 
 ---
 
-## Relationship to TRACKS @ PWC Documentation
+## Usage Instructions
 
-A separate, detailed document exists describing the broader institutional vision, governance model, curricular design, and long-term roadmap for **TRACKS @ PWC**.
+1. **Download:** Clone or download the repository.
+2. **Run:** Double-click `index.html` to open the Landing Hub in Chrome, Edge, or Firefox.
 
-The HTML files in this repository should be understood as **prototypes and visual artifacts** aligned with that broader framework, rather than as definitive or authoritative specifications.
+### API Keys (Optional)
+To use the "Scholar's Lens" feature in the Archivist:
+1. Click the "Standard Mode" button in the top right.
+2. Enter a valid API Key for **Google Gemini** or **Groq**.
+3. The system will use this key only for the duration of the session to fetch AI-augmented insights. Keys are not stored persistently.
 
 ---
+
+## Customization
+
+To modify the content (e.g., adding a new reading module or changing a resource link), edit the corresponding file in the `/dat` directory. The HTML files will automatically render the new data upon refresh.
