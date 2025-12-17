@@ -1,34 +1,39 @@
 /* THEME VARIABLES & VISUAL STYLES */
 
 :root {
-    /* Light Theme (Default) */
+    /* UNIVERSAL LIGHT (Slate) */
+    /* Neutral, professional, high-contrast */
     --bg-primary: #f8fafc;      /* Slate 50 */
     --bg-secondary: #ffffff;    /* White */
     --text-primary: #334155;    /* Slate 700 */
     --text-secondary: #64748b;  /* Slate 500 */
     --border-color: #e2e8f0;    /* Slate 200 */
-    --accent-color: #0f172a;    /* Slate 900 */
+    --accent-color: #0f172a;    /* Slate 900 (Primary Action) */
     --hover-bg: #f1f5f9;        /* Slate 100 */
 }
 
 .theme-dark {
+    /* UNIVERSAL DARK (Obsidian) */
+    /* Deep slate with electric sky blue accents */
     --bg-primary: #0f172a;      /* Slate 900 */
     --bg-secondary: #1e293b;    /* Slate 800 */
     --text-primary: #e2e8f0;    /* Slate 200 */
     --text-secondary: #94a3b8;  /* Slate 400 */
     --border-color: #334155;    /* Slate 700 */
-    --accent-color: #38bdf8;    /* Sky 400 */
+    --accent-color: #38bdf8;    /* Sky 400 (Primary Action) */
     --hover-bg: #1e293b;        /* Slate 800 */
 }
 
 .theme-sepia {
-    --bg-primary: #fdf6e3;      /* Solarized Base3 */
-    --bg-secondary: #eee8d5;    /* Solarized Base2 */
-    --text-primary: #5c4033;    /* Dark Brown */
-    --text-secondary: #846853;  /* Lighter Brown */
-    --border-color: #d8d3c5;    /* Sepia Border */
-    --accent-color: #b58900;    /* Solarized Yellow */
-    --hover-bg: #eee8d5;        /* Solarized Base2 */
+    /* UNIVERSAL SEPIA (Archivist) */
+    /* Warm, readable, low eye-strain. Adjusted for contrast. */
+    --bg-primary: #f2e8cf;      /* Cream Base */
+    --bg-secondary: #fffcf5;    /* Lighter Panel */
+    --text-primary: #382b22;    /* Dark Coffee */
+    --text-secondary: #695848;  /* Earth Tone (Accessible AA) */
+    --border-color: #d6cbb0;    /* Soft Beige Border */
+    --accent-color: #2c241b;    /* Deep Brown (Primary Action) */
+    --hover-bg: #e6dac0;        /* Slightly darker cream */
 }
 
 body { 
