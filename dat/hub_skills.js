@@ -10,7 +10,7 @@ window.HUB_DATA = window.HUB_DATA || {};
 
 window.HUB_DATA.SKILL_LEVELS = [
   {
-    level: "I. Foundations (The Bridge)",
+    level: "Foundations",
     projects: [
       {
         title: "Mathematics for Economists",
@@ -58,7 +58,7 @@ window.HUB_DATA.SKILL_LEVELS = [
   },
 
   {
-    level: "II. Core Toolkit",
+    level: "Core",
     projects: [
       {
         title: "Econometrics: The Standard",
@@ -106,7 +106,7 @@ window.HUB_DATA.SKILL_LEVELS = [
   },
 
   {
-    level: "III. Advanced Inference",
+    level: "Advanced",
     projects: [
       {
         title: "Causal Inference (The Revolution)",
@@ -154,7 +154,7 @@ window.HUB_DATA.SKILL_LEVELS = [
   },
 
   {
-    level: "IV. The Professional Workflow",
+    level: "Professional",
     projects: [
       {
         title: "Reproducible Research (The Turing Way)",
