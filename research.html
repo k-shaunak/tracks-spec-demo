@@ -200,6 +200,12 @@
                                                             <div className="pt-0.5 w-full">
                                                                 <span className="text-sm font-bold text-pwc-accent block mb-1">{step.label}</span>
                                                                 <p className="text-sm text-pwc-subtext mb-3 leading-relaxed">{step.text}</p>
+                                                                {step.stem && (
+                    <div className="mt-3 p-4 bg-pwc-bg rounded border border-pwc-border border-dashed font-mono text-[11px] leading-relaxed italic text-pwc-text">
+                        <span className="text-[9px] font-bold uppercase text-pwc-subtext block mb-1 tracking-widest not-italic">Writing Stem:</span>
+                        "{step.stem}"
+                    </div>
+                )}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -375,4 +381,5 @@
         root.render(<App />);
     </script>
 </body>
+
 </html>
