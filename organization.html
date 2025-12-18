@@ -66,21 +66,21 @@
     <script src="src/theme_manager.js"></script>
 
     <!-- Navigation -->
-    <nav class="sticky top-0 z-50 bg-pwc-bg/95 backdrop-blur border-b border-pwc-border transition-colors duration-300">
+    <nav class="sticky top-0 z-50 bg-pwc-bg/95 backdrop-blur border-b border-pwc-border transition-colors duration-300" aria-label="Main Navigation">
         <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-6">
                 <a href="index.html" class="font-serif font-bold text-lg tracking-tight text-pwc-accent no-underline hover:opacity-80 transition-opacity">
                     TRACKS @ PWC
                 </a>
-                <a href="index.html" class="text-xs font-bold uppercase tracking-widest text-pwc-subtext hover:text-pwc-accent transition-colors no-underline border-l border-pwc-border pl-6 hidden sm:inline-block">
-                    <i class="fa-solid fa-arrow-left mr-2"></i> Return
+                <a href="index.html" class="text-xs font-bold uppercase tracking-widest text-pwc-subtext hover:text-pwc-accent transition-colors no-underline border-l border-pwc-border pl-6 hidden sm:inline-block" aria-label="Return to Home">
+                    <i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i> Return
                 </a>
             </div>
             
-            <div class="flex gap-1 bg-pwc-border/20 p-1 rounded-lg border border-pwc-border">
-                <button class="theme-btn p-2 rounded-md text-xs transition-all" data-theme="light" title="Light"><i class="fa-solid fa-sun"></i></button>
-                <button class="theme-btn p-2 rounded-md text-xs transition-all" data-theme="dark" title="Dark"><i class="fa-solid fa-moon"></i></button>
-                <button class="theme-btn p-2 rounded-md text-xs transition-all" data-theme="sepia" title="Sepia"><i class="fa-solid fa-book-open"></i></button>
+            <div class="flex gap-1 bg-pwc-border/20 p-1 rounded-lg border border-pwc-border" role="group" aria-label="Theme Selection">
+                <button class="theme-btn p-2 rounded-md text-xs transition-all focus:outline-none focus:ring-2 focus:ring-pwc-accent" data-theme="light" aria-label="Switch to Light Theme" title="Light"><i class="fa-solid fa-sun" aria-hidden="true"></i></button>
+                <button class="theme-btn p-2 rounded-md text-xs transition-all focus:outline-none focus:ring-2 focus:ring-pwc-accent" data-theme="dark" aria-label="Switch to Dark Theme" title="Dark"><i class="fa-solid fa-moon" aria-hidden="true"></i></button>
+                <button class="theme-btn p-2 rounded-md text-xs transition-all focus:outline-none focus:ring-2 focus:ring-pwc-accent" data-theme="sepia" aria-label="Switch to Sepia Theme" title="Sepia"><i class="fa-solid fa-book-open" aria-hidden="true"></i></button>
             </div>
         </div>
     </nav>
@@ -97,7 +97,7 @@
         const DistinctionPanel = ({ item }) => {
             if (item.isPipeline) {
                 return (
-                    <div className="border border-dashed border-pwc-border/60 rounded-lg p-6 flex flex-col items-center justify-center grayscale opacity-30 hover:opacity-50 transition-all group aspect-video sm:aspect-square">
+                    <div className="border border-dashed border-pwc-border/60 rounded-lg p-6 flex flex-col items-center justify-center grayscale opacity-30 hover:opacity-50 transition-all group aspect-video sm:aspect-square" aria-hidden="true">
                         <h3 className="text-[11px] font-mono font-medium text-pwc-subtext text-center leading-tight tracking-tight uppercase">
                             {item.title}
                         </h3>
@@ -107,7 +107,7 @@
             }
 
             return (
-                <div className="flex flex-col h-full animate-fade-in">
+                <div className="flex flex-col h-full animate-fade-in" role="article">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-pwc-subtext mb-3 block">{item.role}</span>
                     <h3 className="text-xl font-bold text-pwc-accent mb-4 leading-tight">{item.title}</h3>
                     <p className="text-sm text-pwc-text leading-relaxed opacity-90">
@@ -128,10 +128,11 @@
 
             if (!data) {
                 return (
-                    <div className="flex items-center justify-center min-h-[60vh]">
+                    <div className="flex items-center justify-center min-h-[60vh]" role="status">
                         <div className="text-center">
-                            <i className="fa-solid fa-spinner fa-spin text-pwc-accent text-xl mb-4 opacity-50"></i>
+                            <i className="fa-solid fa-spinner fa-spin text-pwc-accent text-xl mb-4 opacity-50" aria-hidden="true"></i>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-pwc-subtext">Retrieving Infrastructure...</p>
+                            <span className="sr-only">Loading Organization Data</span>
                         </div>
                     </div>
                 );
@@ -150,7 +151,7 @@
                     </header>
 
                     {/* Structural Distinction (Active vs Pipeline) */}
-                    <section className="mb-32 pt-12 border-t border-pwc-border">
+                    <section className="mb-32 pt-12 border-t border-pwc-border" aria-label="Organizational Structure">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-16">
                             {(data.distinctions || []).map((item) => (
                                 <DistinctionPanel key={item.id} item={item} />
@@ -159,14 +160,14 @@
                     </section>
 
                     {/* Functional Pillars */}
-                    <section className="mb-32">
+                    <section className="mb-32" aria-labelledby="pillars-heading">
                         <div className="flex items-center justify-between mb-10 border-b border-pwc-border pb-2">
-                            <h3 className="text-xs font-bold uppercase tracking-widest text-pwc-subtext">Functional Pillars</h3>
+                            <h3 id="pillars-heading" className="text-xs font-bold uppercase tracking-widest text-pwc-subtext">Functional Pillars</h3>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-10 gap-y-12">
                             {(data.functions || []).map((fn, i) => (
-                                <div key={i} className="group transition-all hover:-translate-y-1">
-                                    <div className="mb-4 text-pwc-subtext text-xl opacity-30 group-hover:opacity-100 transition-opacity">
+                                <div key={i} className="group transition-all hover:-translate-y-1" role="article">
+                                    <div className="mb-4 text-pwc-subtext text-xl opacity-30 group-hover:opacity-100 transition-opacity" aria-hidden="true">
                                         <i className={`fa-solid ${fn.icon}`}></i>
                                     </div>
                                     <h4 className="text-[13px] font-bold text-pwc-accent mb-2 uppercase tracking-wide">{fn.title}</h4>
@@ -177,7 +178,7 @@
                     </section>
 
                     {/* Strategic Timeline & Philosophy */}
-                    <section className="grid lg:grid-cols-12 gap-20 pb-16">
+                    <section className="grid lg:grid-cols-12 gap-20 pb-16" aria-label="Strategy and Philosophy">
                         <div className="lg:col-span-5">
                             <div className="lg:sticky lg:top-24">
                                 <h3 className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-8">Operational Philosophy</h3>
@@ -192,7 +193,7 @@
                             <h3 className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-8 border-b border-pwc-border pb-2">Strategic Horizon</h3>
                             <div className="space-y-12">
                                 {(data.roadmap || []).map((phase, i) => (
-                                    <div key={i} className="relative pl-10 border-l border-pwc-border">
+                                    <div key={i} className="relative pl-10 border-l border-pwc-border" role="article">
                                         <div className="absolute -left-[5.5px] top-1.5 w-2.5 h-2.5 rounded-full bg-pwc-bg border border-pwc-subtext/60"></div>
                                         <span className="text-[10px] uppercase font-bold text-pwc-subtext tracking-widest mb-2 block">{phase.year}</span>
                                         <h4 className="text-xl font-bold text-pwc-accent mb-3">{phase.title}</h4>
@@ -204,27 +205,28 @@
                     </section>
 
                     {/* Team Section */}
-                    <section className="mt-32 pt-16 border-t border-pwc-border">
-                        <h3 className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-16">Founding Team</h3>
+                    <section className="mt-32 pt-16 border-t border-pwc-border" aria-labelledby="team-heading">
+                        <h3 id="team-heading" className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-16">Founding Team</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-12">
                             {(data.team || []).map((member, i) => (
-                                <div key={i} className="group flex flex-col">
+                                <div key={i} className="group flex flex-col" role="article">
                                     <div className="flex items-center justify-between mb-3">
                                         <h4 className="text-[15px] font-bold text-pwc-accent">{member.name}</h4>
                                         <a 
                                             href={member.link} 
                                             target="_blank" 
                                             rel="noopener noreferrer"
-                                            className="text-pwc-subtext hover:text-pwc-accent transition-all opacity-20 group-hover:opacity-100"
+                                            className="text-pwc-subtext hover:text-pwc-accent transition-all opacity-20 group-hover:opacity-100 focus:opacity-100"
                                             title="LinkedIn Profile"
+                                            aria-label={`${member.name} LinkedIn Profile`}
                                         >
-                                            <i className="fa-brands fa-linkedin-in text-sm"></i>
+                                            <i className="fa-brands fa-linkedin-in text-sm" aria-hidden="true"></i>
                                         </a>
                                     </div>
                                     <p className="text-[10px] font-mono uppercase tracking-widest text-pwc-subtext leading-none">
                                         {member.role}
                                     </p>
-                                    <div className="mt-5 h-[1px] w-full bg-pwc-border origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out"></div>
+                                    <div className="mt-5 h-[1px] w-full bg-pwc-border origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-700 ease-out" aria-hidden="true"></div>
                                 </div>
                             ))}
                         </div>

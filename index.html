@@ -58,13 +58,13 @@
     <script src="src/theme_manager.js"></script>
 
     <!-- Navigation Bar -->
-    <nav class="sticky top-0 z-50 bg-pwc-bg/95 backdrop-blur border-b border-pwc-border transition-colors duration-300">
+    <nav class="sticky top-0 z-50 bg-pwc-bg/95 backdrop-blur border-b border-pwc-border transition-colors duration-300" aria-label="Main Navigation">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-end">
             <!-- Theme Controls -->
-            <div class="flex gap-1 bg-pwc-border/20 p-1 rounded-lg border border-pwc-border">
-                <button class="theme-btn p-2 rounded-md text-xs transition-all" data-theme="light" title="Light"><i class="fa-solid fa-sun"></i></button>
-                <button class="theme-btn p-2 rounded-md text-xs transition-all" data-theme="dark" title="Dark"><i class="fa-solid fa-moon"></i></button>
-                <button class="theme-btn p-2 rounded-md text-xs transition-all" data-theme="sepia" title="Sepia"><i class="fa-solid fa-book-open"></i></button>
+            <div class="flex gap-1 bg-pwc-border/20 p-1 rounded-lg border border-pwc-border" role="group" aria-label="Theme Selection">
+                <button class="theme-btn p-2 rounded-md text-xs transition-all focus:outline-none focus:ring-2 focus:ring-pwc-accent" data-theme="light" aria-label="Switch to Light Theme" title="Light"><i class="fa-solid fa-sun" aria-hidden="true"></i></button>
+                <button class="theme-btn p-2 rounded-md text-xs transition-all focus:outline-none focus:ring-2 focus:ring-pwc-accent" data-theme="dark" aria-label="Switch to Dark Theme" title="Dark"><i class="fa-solid fa-moon" aria-hidden="true"></i></button>
+                <button class="theme-btn p-2 rounded-md text-xs transition-all focus:outline-none focus:ring-2 focus:ring-pwc-accent" data-theme="sepia" aria-label="Switch to Sepia Theme" title="Sepia"><i class="fa-solid fa-book-open" aria-hidden="true"></i></button>
             </div>
         </div>
     </nav>
@@ -78,44 +78,44 @@
         </div>
 
         <!-- Navigation Grid -->
-        <div class="grid md:grid-cols-3 gap-px bg-pwc-border border border-pwc-border overflow-hidden rounded-sm shadow-sm">
+        <div class="grid md:grid-cols-3 gap-px bg-pwc-border border border-pwc-border overflow-hidden rounded-sm shadow-sm" role="list">
             
             <!-- Organization Module -->
-            <a href="organization.html" class="bg-pwc-surface p-10 hover:bg-pwc-bg transition-colors group flex flex-col justify-between h-full no-underline">
+            <a href="organization.html" class="bg-pwc-surface p-10 hover:bg-pwc-bg transition-colors group flex flex-col justify-between h-full no-underline focus:outline-none focus:ring-inset focus:ring-2 focus:ring-pwc-accent" role="listitem" aria-labelledby="org-heading">
                 <div>
-                    <h2 class="font-serif text-2xl font-bold text-pwc-accent mb-4">Organization</h2>
+                    <h2 id="org-heading" class="font-serif text-2xl font-bold text-pwc-accent mb-4">Organization</h2>
                     <p class="text-sm text-pwc-text leading-relaxed opacity-80 mb-8">
                         The strategic vision, governance models, and functional pillars defining the institutional framework.
                     </p>
                 </div>
                 <span class="text-xs font-bold uppercase tracking-widest text-pwc-accent flex items-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                    View Structure <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    View Structure <i class="fa-solid fa-arrow-right text-[10px]" aria-hidden="true"></i>
                 </span>
             </a>
 
             <!-- Research Module -->
-            <a href="research.html" class="bg-pwc-surface p-10 hover:bg-pwc-bg transition-colors group flex flex-col justify-between h-full no-underline">
+            <a href="research.html" class="bg-pwc-surface p-10 hover:bg-pwc-bg transition-colors group flex flex-col justify-between h-full no-underline focus:outline-none focus:ring-inset focus:ring-2 focus:ring-pwc-accent" role="listitem" aria-labelledby="res-heading">
                 <div>
-                    <h2 class="font-serif text-2xl font-bold text-pwc-accent mb-4">TRACKS in Research</h2>
+                    <h2 id="res-heading" class="font-serif text-2xl font-bold text-pwc-accent mb-4">TRACKS in Research</h2>
                     <p class="text-sm text-pwc-text leading-relaxed opacity-80 mb-8">
                         The inaugural systems demonstrator. Protocols, curriculum, and resources for rigorous academic inquiry.
                     </p>
                 </div>
                 <span class="text-xs font-bold uppercase tracking-widest text-pwc-accent flex items-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                    Access Hub <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    Access Hub <i class="fa-solid fa-arrow-right text-[10px]" aria-hidden="true"></i>
                 </span>
             </a>
 
             <!-- Archivist Module -->
-            <a href="archivist.html" class="bg-pwc-surface p-10 hover:bg-pwc-bg transition-colors group flex flex-col justify-between h-full no-underline">
+            <a href="archivist.html" class="bg-pwc-surface p-10 hover:bg-pwc-bg transition-colors group flex flex-col justify-between h-full no-underline focus:outline-none focus:ring-inset focus:ring-2 focus:ring-pwc-accent" role="listitem" aria-labelledby="arc-heading">
                 <div>
-                    <h2 class="font-serif text-2xl font-bold text-pwc-accent mb-4">The Archivist</h2>
+                    <h2 id="arc-heading" class="font-serif text-2xl font-bold text-pwc-accent mb-4">The Archivist</h2>
                     <p class="text-sm text-pwc-text leading-relaxed opacity-80 mb-8">
                         A serendipity engine for unguided exploration, synthesizing external knowledge bases for lateral thinking.
                     </p>
                 </div>
                 <span class="text-xs font-bold uppercase tracking-widest text-pwc-accent flex items-center gap-3 opacity-60 group-hover:opacity-100 transition-opacity">
-                    Open Lab <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    Open Lab <i class="fa-solid fa-arrow-right text-[10px]" aria-hidden="true"></i>
                 </span>
             </a>
 
