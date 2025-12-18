@@ -113,7 +113,7 @@
             </nav>
         );
 
-        const CurriculumView = () => {
+                const CurriculumView = () => {
             const [activeModuleIndex, setActiveModuleIndex] = useState(0);
             const [activeProtocol, setActiveProtocol] = useState(0);
             
@@ -124,6 +124,7 @@
 
             return (
                 <div className="flex flex-col lg:flex-row h-full overflow-hidden">
+                    {/* Sidebar Navigation */}
                     <div className="lg:w-64 bg-pwc-surface border-r border-pwc-border overflow-y-auto hidden lg:block p-6 flex-shrink-0 transition-colors duration-300">
                         <h3 className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-6">Modules</h3>
                         <nav className="space-y-2">
@@ -135,8 +136,10 @@
                         </nav>
                     </div>
                     
+                    {/* Main Content Area */}
                     <div className="flex-1 overflow-y-auto bg-pwc-bg p-8 lg:p-16 transition-colors duration-300">
                         <div className="max-w-4xl mx-auto animate-fade-in">
+                            {/* Module Header */}
                             <div className="mb-10 pb-8 border-b border-pwc-border">
                                 <span className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-2 block">{module.title}</span>
                                 <h2 className="text-4xl font-serif font-bold text-pwc-accent mb-4">{module.subtitle}</h2>
@@ -161,6 +164,7 @@
                                 )}
                             </div>
 
+                            {/* Protocol Tabs */}
                             {module.protocols && (
                                 <>
                                     <div className="flex overflow-x-auto gap-2 mb-8 pb-2">
@@ -171,6 +175,7 @@
                                         ))}
                                     </div>
 
+                                    {/* Protocol Content Card */}
                                     {currentProtocol && (
                                         <div className="bg-pwc-surface rounded-xl shadow-sm border border-pwc-border overflow-hidden animate-fade-in">
                                             <div className="p-8 lg:p-10">
@@ -192,6 +197,7 @@
                                                     </div>
                                                 )}
                                                 
+                                                {/* Steps with Stem Support */}
                                                 <div className="space-y-8 relative">
                                                     <div className="absolute left-3 top-2 bottom-2 w-0.5 bg-pwc-bg"></div>
                                                     {currentProtocol.steps && currentProtocol.steps.map((step, i) => (
@@ -200,16 +206,30 @@
                                                             <div className="pt-0.5 w-full">
                                                                 <span className="text-sm font-bold text-pwc-accent block mb-1">{step.label}</span>
                                                                 <p className="text-sm text-pwc-subtext mb-3 leading-relaxed">{step.text}</p>
+                                                                {/* Added Stem Feature */}
                                                                 {step.stem && (
-                    <div className="mt-3 p-4 bg-pwc-bg rounded border border-pwc-border border-dashed font-mono text-[11px] leading-relaxed italic text-pwc-text">
-                        <span className="text-[9px] font-bold uppercase text-pwc-subtext block mb-1 tracking-widest not-italic">Writing Stem:</span>
-                        "{step.stem}"
-                    </div>
-                )}
+                                                                    <div className="text-xs bg-pwc-bg border border-pwc-border p-3 rounded text-pwc-text font-mono italic">
+                                                                        "{step.stem}"
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     ))}
                                                 </div>
+
+                                                {/* Added Risk & Pitfall Feature */}
+                                                {currentProtocol.risk && (
+                                                    <div className="mt-10 pt-8 border-t border-pwc-border">
+                                                        <h5 className="text-xs font-bold text-pwc-subtext uppercase tracking-widest mb-2">Methodological Risk</h5>
+                                                        <p className="text-sm text-pwc-text leading-relaxed italic">{currentProtocol.risk}</p>
+                                                    </div>
+                                                )}
+                                                {currentProtocol.pitfall && (
+                                                    <div className="mt-10 pt-8 border-t border-pwc-border">
+                                                        <h5 className="text-xs font-bold text-pwc-subtext uppercase tracking-widest mb-2">Standard Deviation / Pitfall</h5>
+                                                        <p className="text-sm text-pwc-text leading-relaxed italic">{currentProtocol.pitfall}</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -220,6 +240,7 @@
                 </div>
             );
         };
+
 
         const ResourcesView = () => {
             const [activeCategory, setActiveCategory] = useState(0);
@@ -381,5 +402,4 @@
         root.render(<App />);
     </script>
 </body>
-
 </html>
