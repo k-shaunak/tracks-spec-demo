@@ -1,6 +1,7 @@
 /**
  * TRACKS @ PWC - ORGANIZATION DATA
  * Module: Vision, Mission & Structure
+ * Updated: Refined pipeline tracks (Text-only, low prominence).
  */
 
 window.HUB_DATA = window.HUB_DATA || {};
@@ -8,20 +9,35 @@ window.HUB_DATA = window.HUB_DATA || {};
 window.HUB_DATA.ORGANIZATION = {
     overview: {
         mission: "Thematic Resource Alignment",
-        vision: "TRACKS operates as a modular framework designed to bridge the gap between static academic structures and dynamic student activity. It prioritizes interaction over hierarchy, allowing roles to emerge organically from the ecosystem's needs rather than administrative imposition."
+        vision: "TRACKS at Podar World College operates as a modular framework designed to bridge the gap between static academic structures and dynamic student activity. It prioritizes interaction over hierarchy, allowing roles to emerge organically from the ecosystem's needs rather than administrative imposition."
     },
-    distinction: {
-        tracks: {
+    // Pipeline expansion: Subtle text-only indicators for future modules
+    distinctions: [
+        {
+            id: "governance",
             title: "TRACKS @ PWC",
             role: "Strategic Architecture",
-            text: "The governing methodology. It provides the governance framework necessary to scale collaboration beyond individual cohorts. By implementing 'Thematic Resource Alignment', it creates a stable foundation for the construction and sustainability of intellectual initiatives."
+            text: "The governing methodology. It provides the governance framework necessary to scale collaboration beyond individual cohorts. By implementing 'Thematic Resource Alignment', it creates a stable foundation for the construction and sustainability of intellectual initiatives.",
+            isPipeline: false
         },
-        research: {
+        {
+            id: "research",
             title: "TRACKS in Research",
             role: "Initial Incubator",
-            text: "The systems demonstrator. This unit validates the framework by applying it to the development of research talent."
+            text: "The systems demonstrator. This unit validates the framework by applying it to the development of research talent.",
+            isPipeline: false
+        },
+        {
+            id: "arts",
+            title: "TRACKS in Performing Arts?",
+            isPipeline: true
+        },
+        {
+            id: "ventures",
+            title: "TRACKS in Entrepreneurship?",
+            isPipeline: true
         }
-    },
+    ],
     philosophy: {
         title: "Operational Philosophy",
         subtitle: "Evolutionary Governance",
@@ -41,7 +57,7 @@ window.HUB_DATA.ORGANIZATION = {
         {
             year: "Phase III",
             title: "Expansion",
-            desc: "Broadening the scope. The framework expands to encompass new media—prose, abstraction, and performance—unifying diverse modes of expression under a single governance model."
+            desc: "Broadening the scope. The framework expands to encompass new media; bringing together diverse modes of expression, collaboration, and disciplines of skill through the TRACKS model."
         },
         {
             year: "Phase IV",
