@@ -342,5 +342,56 @@ window.HUB_DATA.CURRICULUM = [
                 risk: "Probability Assignment: Treating scenarios as predictions (e.g., 'Scenario A has a 30% chance') rather than equally plausible distinct futures."
             }
         ]
-    }
+    },
+    {
+    id: 'scholarly_communication',
+    title: 'VIII. Scholarly Communication',
+    subtitle: 'The Abstract & The Pitch',
+    intro: "The final phase of inquiry is the translation of internal logic into external signals. Effective communication does not merely summarize; it engineers a 'map' for the reader, providing immediate clarity on the study's necessity, methodology, and contribution. This module provides the structural protocols for distilling research into artifacts that command institutional attention.",
+    readings: [
+        { title: "Writing the Academic Abstract", author: "Swales & Feak", note: "The 'Moves' model for research summaries." },
+        { title: "The Art of Writing Proposals", author: "Przeworski & Salomon", note: "Securing resources for inquiry." },
+        { title: "The Craft of the Pitch", author: "Robert Faff", note: "A template-based approach to navigating new projects." }
+    ],
+    protocols: [
+        {
+            title: 'The High-Signal Abstract',
+            desc: "Distilling the essence of the manuscript.",
+            deliverable: 'The 250-Word Abstract',
+            context: "The abstract is the most frequently read component of a manuscript and serves as a proxy for the study's overall rigor. A high-signal abstract follows a specific logical sequence—Background, Problem, Method, Revelation, and Stake—to ensure the reader immediately grasps the 'Value Added' of the work.",
+            steps: [
+                { label: 'The Hook', text: 'Locating the study in the field.', stem: 'Recent scholarship in [Field] has increasingly focused on [Broad Topic]...' },
+                { label: 'The Pivot', text: 'Identifying the specific friction.', stem: 'However, it remains unclear how [Variable X] interacts with [Variable Y] under conditions of...' },
+                { label: 'The Action', text: 'What was done.', stem: 'This study utilizes a [Methodology] of [Sample/Data] to investigate...' },
+                { label: 'The Revelation', text: 'The core finding.', stem: 'The analysis reveals that [Finding], suggesting a significant departure from...' },
+                { label: 'The Stake', text: 'Why it matters.', stem: 'These results offer a new framework for [Policy/Theory], indicating that...' }
+            ],
+            risk: "Vagueness: Using descriptive phrases like 'this paper discusses' without specifying the direction or nature of the findings."
+        },
+        {
+            title: 'The Research Prospectus',
+            desc: "Securing institutional and financial support.",
+            deliverable: 'Research Proposal',
+            context: "A prospectus is a persuasive document designed to demonstrate three core elements: the importance of the problem, the feasibility of the method, and the specific capability of the researcher. Coherence between the research question and the proposed resource allocation is the primary criterion for success.",
+            steps: [
+                { label: 'Significance', text: 'The value proposition.', stem: 'This research addresses the critical challenge of [Problem] by...' },
+                { label: 'Feasibility', text: 'The operational plan.', stem: 'Access to [Data/Archive] has been secured, and the analysis will be completed within...' },
+                { label: 'Contribution', text: 'The unique edge.', stem: 'Unlike prior studies that focus on [X], this project introduces a [Y] perspective to...' }
+            ],
+            pitfall: "The Ambition Trap: Proposing a scope that is too broad to be executed within the stated timeline or budget."
+        },
+        {
+            title: 'The Academic Pitch',
+            desc: "Verbal synthesis for rapid feedback.",
+            deliverable: 'The 90-Second Synthesis',
+            context: "Scholarly progress often occurs in informal exchanges. The 'Pitch' protocol trains the researcher to articulate the core 'Theoretical Puzzle' and the 'Variant View' without the aid of visual materials, focusing on clarity of logic over technical density.",
+            steps: [
+                { label: 'The Puzzle', text: 'The intellectual contradiction.', stem: 'Existing theories suggest [X], but we observe [Y]. Why?' },
+                { label: 'The Method', text: 'The mode of resolution.', stem: 'I am using [Design/Approach] to test if [Mechanism] explains this...' },
+                { label: 'The Impact', text: 'The so-what factor.', stem: 'Solving this allows us to better predict [Phenomenon] in...' }
+            ],
+            risk: "The Jargon Shield: Using dense terminology to mask a lack of conceptual clarity regarding the central research question."
+        }
+    ]
+}
 ];
