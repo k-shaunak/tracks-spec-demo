@@ -75,5 +75,42 @@ window.HUB_DATA.ORGANIZATION = {
             icon: "fa-landmark",
             desc: "The institutional anchor. Facilitates access to academic resources and legitimizes output through expert guidance."
         }
+    ],
+    team: [
+        {
+            name: "Shaunak Kulkarni",
+            role: "Central Convener",
+            link: "https://www.linkedin.com/in/k-shaunak/"
+        },
+        {
+            name: "Aaditya Chhatre",
+            role: "Administrative Convener (Research)",
+            link: "https://www.linkedin.com/in/aaditya-chhatre-70a01a215/"
+        },
+        {
+            name: "Sarvagnya Jatadharan",
+            role: "Editorial Convener (Research)",
+            link: "https://www.linkedin.com/in/sarvagnya-jatadharan-387181274/"
+        },
+        {
+            name: "Aaryan Gundeti",
+            role: "Research Activity",
+            link: "https://www.linkedin.com/in/aaryan-gundeti/"
+        },
+        {
+            name: "Namashree Dalal",
+            role: "Partnerships/Engagements",
+            link: "https://www.linkedin.com/in/namashree-dalal-962268255/"
+        },
+        {
+            name: "Srishti Sahu",
+            role: "Development (Research)",
+            link: "https://www.linkedin.com/in/srishti-sahu-cl0316/"
+        },
+        {
+            name: "Shriya Kedia",
+            role: "Community/Events (Research)",
+            link: "https://www.linkedin.com/in/shriya-kedia-aa8997286/"
+        }
     ]
 };
