@@ -168,6 +168,32 @@
                             </div>
                         </div>
                     </div>
+                    {/* Founding Team Section */}
+<div className="mt-24 pt-12 border-t border-pwc-border">
+    <h3 className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-12">Founding Team</h3>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-12">
+        {ORGANIZATION.team.map((member, i) => (
+            <div key={i} className="group flex flex-col">
+                <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-bold text-pwc-accent">{member.name}</h4>
+                    <a 
+                        href={member.link} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-pwc-subtext hover:text-pwc-accent transition-colors opacity-40 group-hover:opacity-100"
+                    >
+                        <i className="fa-brands fa-linkedin-in text-xs"></i>
+                    </a>
+                </div>
+                <p className="text-[11px] font-mono uppercase tracking-wider text-pwc-subtext">
+                    {member.role}
+                </p>
+                <div className="mt-4 h-[1px] w-full bg-pwc-border origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+            </div>
+        ))}
+    </div>
+</div>
+
 
                 </main>
             );
@@ -185,4 +211,5 @@
         });
     </script>
 </body>
+
 </html>
