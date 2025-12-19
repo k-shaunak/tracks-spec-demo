@@ -30,7 +30,8 @@ window.HUB_DATA.RESOURCES = {
         { title: 'IMF Data (eLibrary)', url: 'https://data.imf.org/', desc: 'Balance of payments (BOP), trade direction (DOTS), and financial stats.' },
         { title: 'OECD Stat', url: 'https://stats.oecd.org/', desc: 'Structural analysis and policy metrics for member states.' },
         { title: 'Maddison Project', url: 'https://www.rug.nl/ggdc/historicaldevelopment/maddison/', desc: 'Historical GDP and population data (AD 1 - Present).' },
-        { title: 'NBER Data', url: 'https://www.nber.org/research/data', desc: 'Business cycle dating and macro-history databases.' }
+        { title: 'NBER Data', url: 'https://www.nber.org/research/data', desc: 'Business cycle dating and macro-history databases.' },
+        { title: 'RBI Data', url: 'https://data.rbi.org.in/#/dbie/home', desc: 'Monetary data for the Indian Economy.' }
     ],
     political: [
         { title: 'V-Dem (Varieties of Democracy)', url: 'https://www.v-dem.net/', desc: 'The most granular dataset on democratic quality and regimes.' },
@@ -111,4 +112,5 @@ window.HUB_DATA.RESOURCES = {
         { title: 'Coursera (Audit Mode)', url: 'https://www.coursera.org/', desc: 'University courses (audit for free).' },
         { title: 'EdX', url: 'https://www.edx.org/', desc: 'Courses from Harvard, MIT, and others.' }
     ]
+
 };
