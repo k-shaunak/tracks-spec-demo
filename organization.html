@@ -104,10 +104,22 @@
 
         const OrganizationView = () => {
             const [data, setData] = useState(null);
+            const [years, setYears] = useState([]);
+            const [activeYear, setActiveYear] = useState(null);
 
             useEffect(() => {
                 if (window.HUB_DATA && window.HUB_DATA.ORGANIZATION) {
-                    setData(window.HUB_DATA.ORGANIZATION);
+                    const orgData = window.HUB_DATA.ORGANIZATION;
+                    setData(orgData);
+
+                    // Logic to handle Team Years
+                    if (orgData.team && !Array.isArray(orgData.team)) {
+                        // Get keys (years), sort them descending
+                        const availableYears = Object.keys(orgData.team).sort().reverse();
+                        setYears(availableYears);
+                        // Default to the first (highest) year
+                        setActiveYear(availableYears[0]);
+                    }
                 }
             }, []);
 
@@ -124,6 +136,10 @@
 
             const activeModules = (data.distinctions || []).filter(item => !item.isPipeline);
             const pipelineModules = (data.distinctions || []).filter(item => item.isPipeline);
+            
+            // Determine which list to show based on dropdown selection
+            // Fallback to data.team if it's still the old array format
+            const currentTeamList = activeYear ? data.team[activeYear] : (Array.isArray(data.team) ? data.team : []);
 
             return (
                 <main className="max-w-6xl mx-auto px-6 py-16 animate-fade-in">
@@ -209,11 +225,33 @@
                         </div>
                     </section>
 
-                    {/* Team Section */}
+                    {/* Team Section with Dropdown */}
                     <section className="mt-32 pt-16 border-t border-pwc-border" aria-labelledby="team-heading">
-                        <h3 id="team-heading" className="text-xs font-bold uppercase tracking-widest text-pwc-subtext mb-16">Founding Team</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-12">
-                            {(data.team || []).map((member, i) => (
+                        <div className="flex items-center justify-between mb-16">
+                            <h3 id="team-heading" className="text-xs font-bold uppercase tracking-widest text-pwc-subtext">Team</h3>
+                            
+                            {/* Dropdown Selector */}
+                            {years.length > 0 && (
+                                <div className="relative group">
+                                    <select 
+                                        value={activeYear}
+                                        onChange={(e) => setActiveYear(e.target.value)}
+                                        className="appearance-none bg-transparent text-xs font-bold uppercase tracking-widest text-pwc-accent pr-6 py-1 focus:outline-none cursor-pointer border-b border-transparent hover:border-pwc-accent transition-colors"
+                                        aria-label="Select Year"
+                                    >
+                                        {years.map(year => (
+                                            <option key={year} value={year} className="bg-pwc-bg text-pwc-text">
+                                                {year}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <i className="fa-solid fa-chevron-down absolute right-0 top-1/2 -translate-y-1/2 text-[10px] text-pwc-subtext pointer-events-none"></i>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-12 animate-fade-in" key={activeYear}>
+                            {currentTeamList.map((member, i) => (
                                 <div key={i} className="group flex flex-col" role="article">
                                     <div className="flex items-center justify-between mb-3">
                                         <h4 className="text-[15px] font-bold text-pwc-accent">{member.name}</h4>
@@ -238,7 +276,6 @@
                 </main>
             );
         };
-
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<OrganizationView />);
 
@@ -249,4 +286,5 @@
         });
     </script>
 </body>
+
 </html>
