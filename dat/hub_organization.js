@@ -129,6 +129,7 @@ window.HUB_DATA.ORGANIZATION = {
                 role: "Community/Events (Research)",
                 link: "https://www.linkedin.com/in/shriya-kedia-aa8997286/"
             }
-        ],
+        ]
     }
 };
+
