@@ -1,7 +1,6 @@
 /**
  * TRACKS @ PWC - ORGANIZATION DATA
  * Module: Vision, Mission & Structure
- * Updated: Refined pipeline tracks (Text-only, low prominence).
  */
 
 window.HUB_DATA = window.HUB_DATA || {};
@@ -40,7 +39,7 @@ window.HUB_DATA.ORGANIZATION = {
     ],
     philosophy: {
         title: "Operational Philosophy",
-        subtitle: "Evolutionary Governance",
+        subtitle: "Adaptive Governance",
         text: "We prioritize process integrity over administrative structure. The governance model is evolutionary, designed to complement existing institutional frameworks rather than displace them. Resources are aligned to support and organically direct the pursuit of talents and co-operation."
     },
     roadmap: [
@@ -69,12 +68,12 @@ window.HUB_DATA.ORGANIZATION = {
         {
             title: "Inquiry",
             icon: "fa-microscope",
-            desc: "The production mechanism. Drives the incubation of autonomous pods and guides thematic investigation from conception to execution."
+            desc: "The production mechanism. Drives the incubation of autonomous collaboration and guides thematic alignment from conception to execution."
         },
         {
             title: "Capacity",
             icon: "fa-cubes",
-            desc: "The development of capability. Delivers methodological toolkits and workshops to ensure continuous skill evolution."
+            desc: "The development of capability. Delivers methodological toolkits and platforms to sustain adaptability."
         },
         {
             title: "Discourse",
@@ -84,12 +83,12 @@ window.HUB_DATA.ORGANIZATION = {
         {
             title: "Memory",
             icon: "fa-file-signature",
-            desc: "The preservation of standards. Supervises the peer-review pipeline to ensure current insights serve as a foundation for future scholarship."
+            desc: "The preservation of standards. Defines the pipeline to ensure current initiatives build from a solid foundation."
         },
         {
             title: "Alignment",
             icon: "fa-landmark",
-            desc: "The institutional anchor. Facilitates access to academic resources and legitimizes output through expert guidance."
+            desc: "The institutional anchor. Facilitates access to resources and legitimizes output through organizational credibility."
         }
     ],
 
@@ -133,3 +132,4 @@ window.HUB_DATA.ORGANIZATION = {
         ],
     }
 };
+
