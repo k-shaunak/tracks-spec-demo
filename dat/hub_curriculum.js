@@ -22,7 +22,7 @@ window.HUB_DATA.CURRICULUM = [
             { 
                 title: 'The Theoretical Puzzle', 
                 desc: "Elevating a topic into a problem.",
-                deliverable: 'The Problematization Statement', 
+                deliverable: 'The Problem Statement', 
                 context: "A research 'gap' suggests a mere absence of information; a 'puzzle' identifies a friction between existing theories or between theory and observation. High-impact research often stems from a 'Destabilizing Condition'—a contradiction that current frameworks cannot resolve without modification.",
                 steps: [
                     { label: 'Consensus', text: 'The prevailing theoretical expectation.', stem: 'The dominant theoretical framework [Theory X] predicts that [Mechanism A] should result in [Outcome Y]...' },
