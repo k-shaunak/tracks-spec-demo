@@ -721,7 +721,7 @@ Copy the full error text from the browser console and paste it into an AI assist
 
 This section explains how to use AI tools effectively and safely for this codebase, even with no coding background.
 
-The goal is not for you to learn to code. The goal is for you to communicate clearly to an AI what you want, give it the right context, and verify that the result works before deploying it.
+The goal is not for you to learn to code. The goal is for you to communicate clearly to a generative AI model what you want, give it the right context, and verify that the result works before deploying it.
 
 ### Which tools to use
 
