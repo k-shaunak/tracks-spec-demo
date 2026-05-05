@@ -1,5 +1,7 @@
 # TRACKS @ PWC — Project README
 
+A temporary implementation of the website can be accessed at ([tracks-spec-demo](https://k-shaunak.github.io/tracks-spec-demo/))
+
 **Maintainer Reference Document**
 
 > **A note on this deployment's origins:** The TRACKS website — its code, structure, and this documentation — was produced with the assistance of generative AI tools. Section 14 of this document explains how to use such tools to continue that work if you are not familiar with web development.
@@ -29,9 +31,9 @@
 
 ## 1. What This Project Is
 
-TRACKS (Thematic Resource Alignment) is a static website — a collection of HTML files that run entirely in the browser. There is no server, no database, and no backend to manage. The entire project is a folder of files.
+The current website is a collection of HTML files that run entirely in the browser. There is no server, no database, and no backend to manage.
 
-It has four sections:
+It has four modules:
 
 | Page | What It Does |
 |---|---|
@@ -910,7 +912,3 @@ Maintained manually. Add a new entry at the top every time a meaningful change i
   Skills, Activities), The Archivist.
 - README authored as handoff document for incoming team.
 ```
-
----
-
-*This document is prepared as a handoff reference for the incoming team.*
