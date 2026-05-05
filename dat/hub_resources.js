@@ -45,6 +45,7 @@ window.HUB_DATA.RESOURCES = {
         { title: 'Systemic Peace', url: 'https://www.systemicpeace.org/', desc: 'State fragility and major political violence trends.' }
     ],
     dev: [
+        { title: 'Gapminder Foundation', url: 'https://gapminder.org/data', desc: 'Compilation of assorted datasets and tools pertaining to society and development.' },
         { title: 'World Inequality Database (WID)', url: 'https://wid.world/', desc: 'Distributional accounts (Piketty et al.) for income and wealth.' },
         { title: 'Atlas of Economic Complexity', url: 'https://atlas.cid.harvard.edu/', desc: 'Visualizing global trade flows and industrial capabilities.' },
         { title: 'World Bank Open Data', url: 'https://data.worldbank.org/', desc: 'World Development Indicators (WDI) and microdata Library.' },
