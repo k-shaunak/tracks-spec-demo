@@ -1,4 +1,5 @@
 # TRACKS @ PWC — Project README
+*This technical demonstration has been deprecated; it no longer represents the current state of the initiative. This public repository is retained solely for archival purposes.*
 
 A temporary implementation of the website can be accessed at ([tracks-spec-demo](https://k-shaunak.github.io/tracks-spec-demo/))
 
